@@ -1,184 +1,656 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/*
+ * Abakus — estilos globales
+ * Fuente: specs/abakus_especificacion_agnostica_diseno_v1.md (v1.0)
+ *         specs/Abakus Brand Identity Board.png (logo; colores tomados del spec)
+ *
+ * Arquitectura en 2 capas de tokens + base:
+ *   1. primitives — valores crudos (paleta, escalas). No usar directamente en componentes.
+ *   2. semantic   — roles de interfaz que referencian primitivos. Es la API para componentes.
+ *   base          — estilos de elementos HTML nativos; consume solo tokens semánticos.
+ *
+ * Todos los valores son "referencia propuesta" salvo que se indique lo contrario.
+ * Valores marcados [derivado] no figuran en el spec: se infirieron para completar
+ * estados y deben validarse. No se define tema oscuro (spec §14).
+ */
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+@layer primitives, semantic, base;
+
+/* ==========================================================================
+   Capa 1 — Primitivos
+   ========================================================================== */
+
+@layer primitives {
+  :root {
+    /* Azules (dominantes) — spec §3 */
+    --abk-blue-900: #102a48; /* azul profundo institucional */
+    --abk-blue-800: #173d63; /* azul principal navegación/acción */
+    --abk-blue-700: #12618b; /* información */
+    --abk-blue-600: #276895; /* azul secundario */
+    --abk-blue-50: #e8f1f7; /* [derivado] superficie de selección/info */
+
+    /* Verdes (acento contenido) — spec §3 */
+    --abk-green-700: #087f69; /* acento de mayor contraste / éxito */
+    --abk-green-400: #2cb99a; /* complementario: solo gráfico, no texto (contraste < 4,5:1) */
+    --abk-green-50: #ddf5ee; /* superficie suave */
+
+    /* Neutros — spec §3 */
+    --abk-neutral-0: #ffffff;
+    --abk-neutral-50: #f3f6f9;
+    --abk-neutral-100: #eaeff4; /* [derivado] hover de superficies */
+    --abk-neutral-200: #e2e8ef;
+    --abk-neutral-400: #8a99a8; /* [derivado] texto deshabilitado */
+    --abk-neutral-500: #6f8093; /* [derivado] borde de controles (≥ 3:1 sobre blanco) */
+    --abk-neutral-600: #526477;
+    --abk-neutral-900: #14283c;
+
+    /* Semánticos crudos — spec §3 */
+    --abk-amber-700: #a15c00;
+    --abk-amber-50: #fdf2e3; /* [derivado] */
+    --abk-red-700: #b42318;
+    --abk-red-800: #912018; /* [derivado] hover destructivo */
+    --abk-red-50: #fcecea; /* [derivado] */
+
+    /* Tipografía — spec §4 (Inter no aprobada como definitiva) */
+    --abk-font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+      sans-serif;
+    --abk-font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+    --abk-font-size-12: 0.75rem;
+    --abk-font-size-14: 0.875rem;
+    --abk-font-size-16: 1rem;
+    --abk-font-size-20: 1.25rem;
+    --abk-font-size-24: 1.5rem;
+    --abk-font-size-32: 2rem;
+
+    --abk-line-height-16: 1rem;
+    --abk-line-height-22: 1.375rem;
+    --abk-line-height-24: 1.5rem;
+    --abk-line-height-28: 1.75rem;
+    --abk-line-height-32: 2rem;
+    --abk-line-height-40: 2.5rem;
+
+    --abk-font-weight-regular: 400;
+    --abk-font-weight-medium: 500;
+    --abk-font-weight-semibold: 600;
+
+    /* Espaciado: ritmo de 4 px — spec §5 */
+    --abk-space-0: 0;
+    --abk-space-1: 0.25rem; /* 4 */
+    --abk-space-2: 0.5rem; /* 8 */
+    --abk-space-3: 0.75rem; /* 12 */
+    --abk-space-4: 1rem; /* 16 */
+    --abk-space-5: 1.25rem; /* 20 */
+    --abk-space-6: 1.5rem; /* 24 */
+    --abk-space-8: 2rem; /* 32 */
+    --abk-space-10: 2.5rem; /* 40 */
+    --abk-space-13: 3.25rem; /* 52 */
+    --abk-space-16: 4rem; /* 64 */
+
+    /* Radios — spec §5 */
+    --abk-radius-6: 6px;
+    --abk-radius-10: 10px;
+    --abk-radius-12: 12px;
+    --abk-radius-full: 999px;
+
+    /* Bordes y sombras — spec §5: divisiones sutiles antes que sombras */
+    --abk-border-width-1: 1px;
+    --abk-border-width-2: 2px;
+    --abk-shadow-sm: 0 1px 2px rgb(16 42 72 / 0.06); /* [derivado] */
+    --abk-shadow-md: 0 8px 24px rgb(16 42 72 / 0.12); /* [derivado] solo overlays */
+
+    /* Movimiento — perfil estable (eje Estable/Dinámica = 25) */
+    --abk-duration-120: 120ms;
+    --abk-duration-200: 200ms;
+    --abk-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   }
 }
 
-.hero {
-  position: relative;
+/* ==========================================================================
+   Capa 2 — Semánticos
+   ========================================================================== */
 
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
+@layer semantic {
+  :root {
+    color-scheme: light;
+
+    /* --- Fondos y superficies --- */
+    --color-bg-app: var(--abk-neutral-50);
+    --color-surface: var(--abk-neutral-0);
+    --color-surface-subtle: var(--abk-neutral-50);
+    --color-surface-hover: var(--abk-neutral-100);
+    --color-surface-selected: var(--abk-blue-50);
+    --color-surface-inverse: var(--abk-blue-900);
+    --color-surface-nav: var(--abk-blue-900);
+
+    /* --- Bordes --- */
+    --color-border: var(--abk-neutral-200); /* divisiones, tarjetas, tablas */
+    --color-border-control: var(--abk-neutral-500); /* campos y selectores */
+    --color-border-strong: var(--abk-neutral-600);
+
+    /* --- Texto --- */
+    --color-text: var(--abk-neutral-900);
+    --color-text-muted: var(--abk-neutral-600);
+    --color-text-disabled: var(--abk-neutral-400);
+    --color-text-inverse: var(--abk-neutral-0);
+    --color-text-link: var(--abk-blue-600);
+    --color-text-link-hover: var(--abk-blue-800);
+
+    /* --- Acciones (jerarquía principal / secundaria / destructiva) — spec §7 --- */
+    --color-action-primary: var(--abk-blue-800);
+    --color-action-primary-hover: var(--abk-blue-900);
+    --color-action-primary-text: var(--abk-neutral-0);
+    --color-action-secondary: var(--abk-neutral-0);
+    --color-action-secondary-hover: var(--abk-neutral-100);
+    --color-action-secondary-text: var(--abk-blue-800);
+    --color-action-secondary-border: var(--abk-neutral-500);
+    --color-action-destructive: var(--abk-red-700);
+    --color-action-destructive-hover: var(--abk-red-800);
+    --color-action-destructive-text: var(--abk-neutral-0);
+    --color-action-disabled-bg: var(--abk-neutral-100);
+    --color-action-disabled-text: var(--abk-neutral-400);
+
+    /* --- Acento de marca (contenido, NO significa rentabilidad) — spec §3 --- */
+    --color-accent: var(--abk-green-700);
+    --color-accent-graphic: var(--abk-green-400); /* solo elementos no textuales */
+    --color-accent-surface: var(--abk-green-50);
+
+    /* --- Marca: logo — planilla "Abakus Brand Identity Board" con paleta del spec §3 --- */
+    --color-logo-primary: var(--abk-blue-900);
+    --color-logo-accent: var(--abk-green-400); /* uso gráfico, no texto */
+    --color-logo-inverse: var(--abk-neutral-0);
+    --font-family-brand: var(--font-family-base); /* pendiente: la planilla muestra otra sans geométrica */
+    --logo-size: 2rem; /* altura del símbolo; el resto del logotipo escala con ella */
+    --logo-size-min: 16px; /* reducción mínima del símbolo según la planilla */
+    --logo-clearspace: calc(var(--logo-size) * 0.5); /* [derivado] zona de respeto «A» aproximada */
+
+    /* --- Foco — spec §12 --- */
+    --color-focus: var(--abk-blue-600);
+    --focus-ring-width: var(--abk-border-width-2);
+    --focus-ring-offset: 2px;
+
+    /* --- Estados semánticos (acompañar siempre de texto/signo/icono) — spec §3 --- */
+    --color-success: var(--abk-green-700);
+    --color-success-surface: var(--abk-green-50);
+    --color-warning: var(--abk-amber-700);
+    --color-warning-surface: var(--abk-amber-50);
+    --color-error: var(--abk-red-700);
+    --color-error-surface: var(--abk-red-50);
+    --color-info: var(--abk-blue-700);
+    --color-info-surface: var(--abk-blue-50);
+
+    /* --- Estados de dato / consolidación — spec §10, §11 ---
+       Se diferencian por texto; el color solo refuerza. */
+    --color-data-complete: var(--color-success);
+    --color-data-partial: var(--color-warning);
+    --color-data-pending: var(--color-info);
+    --color-data-stale: var(--color-warning);
+    --color-data-error: var(--color-error);
+    --color-data-unavailable: var(--color-text-muted); /* "no disponible" / "no aplica" ≠ 0 */
+
+    /* --- Variación patrimonial: neutra a propósito, el signo es obligatorio — spec §9.3, §10 --- */
+    --color-variation-positive: var(--color-text);
+    --color-variation-negative: var(--color-text);
+
+    /* --- Tipografía (shorthand `font`) — spec §4 --- */
+    --font-family-base: var(--abk-font-sans);
+    --font-family-mono: var(--abk-font-mono);
+
+    --type-kpi: var(--abk-font-weight-semibold) var(--abk-font-size-32) /
+      var(--abk-line-height-40) var(--font-family-base);
+    --type-title: var(--abk-font-weight-semibold) var(--abk-font-size-24) /
+      var(--abk-line-height-32) var(--font-family-base);
+    --type-section: var(--abk-font-weight-semibold) var(--abk-font-size-20) /
+      var(--abk-line-height-28) var(--font-family-base);
+    --type-subtitle: var(--abk-font-weight-medium) var(--abk-font-size-16) /
+      var(--abk-line-height-24) var(--font-family-base);
+    --type-body: var(--abk-font-weight-regular) var(--abk-font-size-14) /
+      var(--abk-line-height-22) var(--font-family-base);
+    --type-body-strong: var(--abk-font-weight-medium) var(--abk-font-size-14) /
+      var(--abk-line-height-22) var(--font-family-base);
+    --type-reading: var(--abk-font-weight-regular) var(--abk-font-size-16) /
+      var(--abk-line-height-24) var(--font-family-base);
+    --type-meta: var(--abk-font-weight-regular) var(--abk-font-size-12) /
+      var(--abk-line-height-16) var(--font-family-base);
+    --type-label: var(--abk-font-weight-medium) var(--abk-font-size-14) /
+      var(--abk-line-height-22) var(--font-family-base);
+
+    /* --- Espaciado — spec §5 --- */
+    --space-inline-xs: var(--abk-space-1);
+    --space-inline-sm: var(--abk-space-2);
+    --space-inline-md: var(--abk-space-3);
+    --space-inline-lg: var(--abk-space-4);
+    --space-stack-xs: var(--abk-space-1);
+    --space-stack-sm: var(--abk-space-2);
+    --space-stack-md: var(--abk-space-4);
+    --space-stack-lg: var(--abk-space-6);
+    --space-section: var(--abk-space-8); /* 24–32 px */
+    --space-section-tight: var(--abk-space-6);
+    --space-card-padding: var(--abk-space-6); /* 20–24 px */
+    --space-card-padding-tight: var(--abk-space-5);
+    --space-control-x: var(--abk-space-3);
+    --space-cell-x: var(--abk-space-4);
+    --space-page-gutter: var(--abk-space-8);
+    --space-page-gutter-narrow: var(--abk-space-4);
+
+    /* --- Radios --- */
+    --radius-control: var(--abk-radius-6);
+    --radius-card: var(--abk-radius-10);
+    --radius-panel: var(--abk-radius-12);
+    --radius-pill: var(--abk-radius-full);
+
+    /* --- Dimensiones de interacción — spec §5, §12 --- */
+    --size-control-height: var(--abk-space-10); /* ~40 px */
+    --size-target-min: 24px; /* WCAG 2.2 AA, 2.5.8 */
+
+    /* --- Densidad de tablas — spec §5, §8 (cómoda = predeterminada) --- */
+    --table-row-height-compact: var(--abk-space-10); /* ~40 px */
+    --table-row-height-comfortable: var(--abk-space-13); /* ~52 px */
+    --table-row-height-spacious: var(--abk-space-16); /* ~64 px */
+    --table-row-height: var(--table-row-height-comfortable);
+
+    /* --- Elevación: borde primero, sombra solo para capas flotantes --- */
+    --border-default: var(--abk-border-width-1) solid var(--color-border);
+    --border-control: var(--abk-border-width-1) solid var(--color-border-control);
+    --elevation-raised: var(--abk-shadow-sm);
+    --elevation-overlay: var(--abk-shadow-md);
+
+    /* --- Movimiento --- */
+    --motion-fast: var(--abk-duration-120) var(--abk-easing-standard);
+    --motion-base: var(--abk-duration-200) var(--abk-easing-standard);
   }
 
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
+  /* Densidad aplicable a cualquier contenedor de tabla (spec §8) */
+  [data-density='compact'] {
+    --table-row-height: var(--table-row-height-compact);
+  }
+  [data-density='comfortable'] {
+    --table-row-height: var(--table-row-height-comfortable);
+  }
+  [data-density='spacious'] {
+    --table-row-height: var(--table-row-height-spacious);
   }
 
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --motion-fast: 0ms linear;
+      --motion-base: 0ms linear;
     }
   }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
 }
 
-#docs {
-  border-right: 1px solid var(--border);
+/* ==========================================================================
+   Base — elementos nativos (sin componentes específicos)
+   ========================================================================== */
 
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    font: var(--type-body);
+    color: var(--color-text);
+    background: var(--color-bg-app);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* --- Jerarquía tipográfica — spec §4 --- */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  figure,
+  blockquote,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  h1 {
+    font: var(--type-title);
+  }
+  h2 {
+    font: var(--type-section);
+  }
+  h3 {
+    font: var(--type-subtitle);
+  }
+  h4,
+  h5,
+  h6 {
+    font: var(--type-body-strong);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-text);
+    text-wrap: balance;
+  }
+
+  small {
+    font: var(--type-meta);
+    color: var(--color-text-muted);
+  }
+
+  strong,
+  b {
+    font-weight: var(--abk-font-weight-semibold);
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;
+  }
+
+  hr {
+    border: 0;
+    border-top: var(--border-default);
+    margin: var(--space-stack-lg) 0;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-inline-start: var(--abk-space-6);
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* --- Cifras: números tabulares — spec §4 --- */
+  table,
+  data,
+  output,
+  time,
+  meter,
+  progress {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Enlaces --- */
   a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
+    color: var(--color-text-link);
+    text-underline-offset: 0.15em;
+    transition: color var(--motion-fast);
+  }
+  a:hover {
+    color: var(--color-text-link-hover);
+  }
+
+  /* --- Foco visible — spec §12 --- */
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background: var(--color-surface-selected);
+    color: var(--color-text);
+  }
+
+  /* --- Controles de formulario: base neutra; la jerarquía la definen los componentes --- */
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  button {
+    min-height: var(--size-control-height);
+    min-width: var(--size-target-min);
+    padding: 0 var(--space-control-x);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-fast),
+      border-color var(--motion-fast),
+      color var(--motion-fast);
+  }
+
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='color']),
+  select,
+  textarea {
+    width: 100%;
+    min-height: var(--size-control-height);
+    padding: 0 var(--space-control-x);
+    background: var(--color-surface);
+    border: var(--border-control);
+    border-radius: var(--radius-control);
+    transition: border-color var(--motion-fast);
+  }
+
+  textarea {
+    padding-block: var(--abk-space-2);
+    resize: vertical;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--color-action-primary);
+  }
+
+  ::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
+  label {
+    font: var(--type-label);
+    color: var(--color-text);
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+
+  legend {
+    padding: 0;
+    font: var(--type-subtitle);
+  }
+
+  /* Errores asociados al campo — spec §7, §12 */
+  [aria-invalid='true'] {
+    border-color: var(--color-error) !important;
+  }
+
+  /* Deshabilitado */
+  :disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+    color: var(--color-text-disabled);
+  }
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    background: var(--color-action-disabled-bg);
+    border-color: var(--color-border);
+  }
+
+  /* Cargando */
+  [aria-busy='true'] {
+    cursor: progress;
+  }
+
+  /* --- Tablas: patrón general — spec §8 --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+  }
+
+  caption {
+    font: var(--type-subtitle);
+    text-align: start;
+    padding-block-end: var(--space-stack-sm);
+  }
+
+  th,
+  td {
+    height: var(--table-row-height);
+    padding: 0 var(--space-cell-x);
+    text-align: start;
+    vertical-align: middle;
+    border-bottom: var(--border-default);
+  }
+
+  th {
+    font: var(--type-body-strong);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  thead th {
+    background: var(--color-surface-subtle);
+  }
+
+  tbody tr {
+    transition: background-color var(--motion-fast);
+  }
+  tbody tr:hover {
+    background: var(--color-surface-hover);
+  }
+  tbody tr[aria-selected='true'] {
+    background: var(--color-surface-selected);
+  }
+
+  /* Columnas numéricas alineadas a la derecha — spec §4, §8 */
+  th[data-align='end'],
+  td[data-align='end'] {
+    text-align: end;
+  }
+
+  /* Dirección de orden visible: el marcador lo pinta el componente */
+  th[aria-sort] {
+    color: var(--color-text);
+  }
+
+  /* --- Diálogos — spec §7 --- */
+  dialog {
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: var(--border-default);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--elevation-overlay);
+    padding: var(--space-card-padding);
+  }
+  dialog::backdrop {
+    background: rgb(16 42 72 / 0.4);
+  }
+
+  /* --- Marca: logo (versiones y tonos de la planilla) ---
+     Versiones: horizontal (principal / compacta según --logo-size), vertical, símbolo.
+     Tonos: default (azul + acento verde), mono (solo azul), inverse (sobre azul profundo).
+     No deformar, recolorear fuera de estos tonos ni reducir el símbolo bajo --logo-size-min. */
+  .abk-logo {
+    --_size: max(var(--logo-size), var(--logo-size-min));
+    --_primary: var(--color-logo-primary);
+    --_accent: var(--color-logo-accent);
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
+    gap: calc(var(--_size) * 0.3);
+    color: var(--_primary);
+    line-height: 1;
+    flex-shrink: 0;
   }
 
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
+  .abk-logo--mono {
+    --_accent: var(--color-logo-primary);
   }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
+  .abk-logo--inverse {
+    --_primary: var(--color-logo-inverse);
   }
-}
 
-.ticks {
-  position: relative;
-  width: 100%;
+  .abk-logo__symbol {
+    height: var(--_size);
+    width: auto;
+    aspect-ratio: 86 / 74.6;
+  }
 
-  &::before,
-  &::after {
-    content: '';
+  .abk-logo__primary path,
+  path.abk-logo__accent {
+    fill: none;
+  }
+  .abk-logo__primary path {
+    stroke: var(--_primary);
+  }
+  path.abk-logo__accent {
+    stroke: var(--_accent);
+  }
+  .abk-logo__primary circle {
+    fill: var(--_primary);
+  }
+  circle.abk-logo__accent {
+    fill: var(--_accent);
+  }
+
+  .abk-logo__wordmark {
+    font-family: var(--font-family-brand);
+    font-weight: var(--abk-font-weight-semibold);
+    font-size: calc(var(--_size) * 1.1);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .abk-logo--vertical {
+    flex-direction: column;
+    gap: calc(var(--_size) * 0.15);
+  }
+  .abk-logo--vertical .abk-logo__wordmark {
+    font-size: calc(var(--_size) * 0.75);
+  }
+
+  /* --- Utilidades transversales de accesibilidad --- */
+  .sr-only {
     position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+  [hidden] {
+    display: none !important;
   }
 }
