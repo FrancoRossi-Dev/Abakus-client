@@ -1,0 +1,83 @@
+import Joi from 'joi';
+
+const textMessages = (label, reason) => ({
+  'string.base': `${label} must be text.`,
+  'string.empty': `${label} is required ${reason}.`,
+  'string.min': `${label} must be at least {#limit} characters long.`,
+  'string.max': `${label} must be at most {#limit} characters long.`,
+  'any.required': `${label} is required ${reason}.`,
+});
+
+const usernameMessages = textMessages('Username', 'to identify your advisor account');
+const passwordMessages = textMessages('Password', 'to secure your account');
+
+const username = Joi.string().trim().min(3).max(30).required().messages(usernameMessages);
+const password = Joi.string().min(6).max(30).required().messages(passwordMessages);
+
+const advisorDetailsSchema = Joi.object({
+  comercialName: Joi.string()
+    .trim()
+    .max(100)
+    .required()
+    .messages(textMessages('Commercial name', 'to present your advisory firm')),
+
+  legalName: Joi.string()
+    .trim()
+    .max(100)
+    .required()
+    .messages(textMessages('Legal name', 'to register your advisory firm')),
+
+  address: Joi.string()
+    .trim()
+    .max(200)
+    .empty('')
+    .messages(textMessages('Address', 'when provided')),
+
+  country: Joi.string()
+    .trim()
+    .max(60)
+    .empty('')
+    .messages(textMessages('Country', 'when provided')),
+
+  document: Joi.string()
+    .trim()
+    .required()
+    .messages(textMessages('Document', 'to register your advisory firm')),
+
+  phone: Joi.string()
+    .trim()
+    .required()
+    .messages(textMessages('Phone', 'to contact your advisory firm')),
+
+  contactEmail: Joi.string()
+    .trim()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      ...textMessages('Contact email', 'to contact your advisory firm'),
+      'string.email': 'Contact email must be a valid address.',
+    }),
+})
+  .required()
+  .messages({
+    'object.base': 'Advisor details must be an object.',
+    'any.required':
+      'Advisor details are required to register your advisory firm.',
+  });
+
+export const loginSchema = Joi.object({ username, password });
+
+// Unknown keys (e.g. role, planTier) are rejected by Joi, so they can't be chosen at signup
+export const registerSchema = Joi.object({
+  username,
+  password: password.pattern(/\S/).messages({
+    'string.pattern.base': 'Password cannot be only spaces.',
+  }),
+  // Only used to compare against password; stripped so it never reaches the API
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required().strip().messages({
+    'any.only': 'Password confirmation does not match the password.',
+    'string.empty': 'Please confirm your password.',
+    'any.required': 'Please confirm your password.',
+  }),
+  details: advisorDetailsSchema,
+});
