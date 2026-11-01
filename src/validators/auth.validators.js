@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import Joi from 'joi';
 
 const textMessages = (label, reason) => ({
@@ -82,7 +81,6 @@ export const registerSchema = Joi.object({
   }),
   details: advisorDetailsSchema,
 });
-=======
 import Joi from "joi";
 
 export const registerSchema = Joi.object({
@@ -111,5 +109,3 @@ export const registerSchema = Joi.object({
     address: Joi.string().trim().max(200).allow(""),
     country: Joi.string().trim().max(60).allow(""),
   }).required(),
-});
->>>>>>> 581670f5fb27cd8057dda1862128ce00ab4b5243
