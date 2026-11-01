@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import { Provider } from 'react-redux';
-import 'react-toastify/dist/ReactTostify.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 import './App.css';
 import Login from './pages/Login';
