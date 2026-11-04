@@ -1,0 +1,74 @@
+/* El <dialog> ocupa solo el panel; el padding va adentro para que
+   un click en el borde no cuente como click afuera */
+.modal {
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--elevation-overlay);
+  width: min(32rem, calc(100vw - 2 * var(--space-page-gutter-narrow)));
+  max-height: calc(100vh - 2 * var(--space-page-gutter-narrow));
+}
+
+/* Overlay negro transparente */
+.modal::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+/* Bloquea el scroll de la página mientras hay un modal abierto */
+html:has(.modal[open]) {
+  overflow: hidden;
+}
+
+.modal__panel {
+  padding: var(--space-card-padding);
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-inline-md);
+  margin-bottom: var(--space-stack-md);
+}
+
+.modal__title {
+  margin: 0;
+  font: var(--type-section);
+}
+
+/* Pie de acciones para el contenido del modal (ej. formularios):
+   alineado a la derecha, la acción principal va última */
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-inline-sm);
+  margin-top: var(--space-stack-lg);
+}
+
+.modal__close {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--size-target-min);
+  min-height: var(--size-target-min);
+  padding: var(--space-inline-xs);
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.modal__close:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.modal__close:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}

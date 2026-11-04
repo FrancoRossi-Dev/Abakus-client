@@ -1,11 +1,19 @@
-import { useState } from "react";
-import ManagerTable from "../components/managers/ManagerTable";
-import ManagerForm from "../components/managers/ManagerForm";
+import { useState } from 'react';
+import ManagerTable from '../components/managers/ManagerTable';
+import ManagerForm from '../components/managers/ManagerForm';
+import Modal from '../components/shared/modal/Modal';
+import Button from '../components/shared/button/Button';
+import { getRole } from '../utils/utils';
 
 const Managers = () => {
+  const canCreate = getRole() === 'advisor';
+
   const [showForm, setShowForm] = useState(false);
 
   const [selectedManager, setSelectedManager] = useState(null);
+
+  // Cambiarlo remonta la tabla: vuelve a la página 1 y recarga el listado
+  const [tableKey, setTableKey] = useState(0);
 
   const handleAdd = () => {
     setSelectedManager(null);
@@ -22,32 +30,27 @@ const Managers = () => {
     setSelectedManager(null);
   };
 
+  const handleSuccess = ({ created } = {}) => {
+    handleClose();
+    if (created) setTableKey((key) => key + 1);
+  };
+
   return (
-    <div>
+    <div className='page'>
       <h1>Managers</h1>
+
       <p>Administrá los managers de tu firma.</p>
 
-      <ManagerTable onEdit={handleEdit} />
+      {canCreate && <Button type='primary' label='Agregar nuevo manager' onClick={handleAdd} />}
 
-      {!showForm && (
-        <button type="button" onClick={handleAdd}>
-          Agregar manager
-        </button>
-      )}
+      <ManagerTable key={tableKey} onEdit={handleEdit} />
 
-      {showForm && (
-        <div>
-          <h2>
-            {selectedManager ? "Editar manager" : "Agregar manager"}
-          </h2>
-
-          <ManagerForm
-            manager={selectedManager}
-            onSuccess={handleClose}
-            onCancel={handleClose}
-          />
-        </div>
-      )}
+      <Modal
+        isOpen={showForm}
+        onClose={handleClose}
+        title={selectedManager ? 'Editar manager' : 'Agregar manager'}>
+        <ManagerForm manager={selectedManager} onSuccess={handleSuccess} onCancel={handleClose} />
+      </Modal>
     </div>
   );
 };

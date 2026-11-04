@@ -1,0 +1,50 @@
+/* Botón compacto para tablas: pisa la altura base de <button> (40px) */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-xs);
+  min-height: var(--size-target-min);
+  padding: 0 var(--space-inline-sm);
+  border: none;
+  background: transparent;
+  font: var(--type-body-strong);
+  white-space: nowrap;
+}
+
+.action-button__icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+/* Normal */
+.action-button--default {
+  color: var(--color-text-link);
+}
+
+.action-button--default:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text-link-hover);
+}
+
+.action-button--default:active:not(:disabled) {
+  background: var(--color-surface-selected);
+}
+
+/* Destructivo */
+.action-button--danger {
+  color: var(--color-action-destructive);
+}
+
+.action-button--danger:hover:not(:disabled) {
+  background: var(--color-error-surface);
+  color: var(--color-action-destructive-hover);
+}
+
+.action-button--danger:active:not(:disabled) {
+  background: color-mix(in srgb, var(--color-error-surface) 70%, var(--color-action-destructive));
+}
+
+.action-button:disabled {
+  color: var(--color-action-disabled-text);
+  cursor: not-allowed;
+}

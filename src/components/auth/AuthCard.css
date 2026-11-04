@@ -1,0 +1,97 @@
+.auth-card {
+  width: 100%;
+  max-width: var(--_auth-width);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-lg);
+}
+
+.auth-card--narrow {
+  --_auth-width: 25rem; /* ~400 px: login */
+}
+.auth-card--wide {
+  --_auth-width: 32rem; /* ~512 px: registro, sigue siendo una sola columna */
+}
+
+/* Panel: borde sutil antes que sombra pronunciada (spec §5) */
+.auth-card__panel {
+  display: grid;
+  gap: var(--space-stack-lg);
+  padding: var(--space-section);
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--elevation-raised);
+}
+
+.auth-card__header {
+  display: grid;
+  gap: var(--space-stack-xs);
+}
+
+.auth-card__title {
+  font: var(--type-title);
+}
+
+.auth-card__description {
+  color: var(--color-text-muted);
+}
+
+.auth-card__footer {
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.auth-card__footer a {
+  font-weight: var(--abk-font-weight-medium);
+}
+
+/* --- Formularios de autenticación --- */
+.auth-form {
+  display: grid;
+  gap: var(--space-stack-lg);
+}
+
+.auth-form__fields {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+/* Grupos con título (registro) */
+.auth-form__section {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.auth-form__section + .auth-form__section {
+  padding-top: var(--space-stack-lg);
+  border-top: var(--border-default);
+}
+
+.auth-form__legend {
+  margin-bottom: var(--space-stack-md);
+  font: var(--type-subtitle);
+  color: var(--color-text);
+}
+
+.auth-form__actions {
+  display: grid;
+  gap: var(--space-stack-sm);
+}
+
+.auth-form__submit {
+  width: 100%;
+}
+
+.auth-form__submit-hint {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Pantallas angostas: menos aire dentro de la tarjeta para priorizar el formulario */
+@media (max-width: 30rem) {
+  .auth-card__panel {
+    padding: var(--space-card-padding-tight);
+  }
+}

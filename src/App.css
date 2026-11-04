@@ -244,7 +244,7 @@
 
     /* --- Densidad de tablas — spec §5, §8 (cómoda = predeterminada) --- */
     --table-row-height-compact: var(--abk-space-10); /* ~40 px */
-    --table-row-height-comfortable: var(--abk-space-13); /* ~52 px */
+    --table-row-height-comfortable: 2.75rem; /* ~44 px */
     --table-row-height-spacious: var(--abk-space-16); /* ~64 px */
     --table-row-height: var(--table-row-height-comfortable);
 

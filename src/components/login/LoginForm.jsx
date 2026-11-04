@@ -1,14 +1,18 @@
-import { useId, useState } from "react";
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { joiResolver } from "@hookform/resolvers/joi";
-import { loginSchema } from "../../validators/auth.validators";
-import backend from "../../api/backend";
+import { useId, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { joiResolver } from '@hookform/resolvers/joi';
+import { loginSchema } from '../../validators/auth.validators';
+import backend from '../../api/backend';
+import FormField from '../shared/form/FormField';
+import FormAlert from '../shared/form/FormAlert';
+import '../shared/button/Button.css';
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const formId = useId();
-  const [error, setError] = useState("");
+  const hintId = `${formId}-submit-hint`;
+  const [error, setError] = useState('');
 
   const {
     register,
@@ -16,55 +20,76 @@ const LoginForm = () => {
     formState: { errors, isValid, isSubmitting },
   } = useForm({
     resolver: joiResolver(loginSchema),
-    mode: "onChange",
+    // Muestra el error recién al salir del campo y lo retira apenas se corrige
+    mode: 'onTouched',
     defaultValues: {
-      username: "",
-      password: "",
+      username: '',
+      password: '',
     },
   });
 
   const handleLogin = async (data) => {
-    setError("");
+    setError('');
 
     try {
-      const response = await backend.post("/auth/login", data);
+      const response = await backend.post('/auth/login', data);
 
-      // Save the token
-      localStorage.setItem("abakus-token", response.data.token);
-      navigate("/");
+      localStorage.setItem('abakus-token', response.data.token);
+      navigate('/');
     } catch (error) {
       setError(
         error.response?.data?.message ||
-          "No es posible iniciar sesión. Por favor, inténtalo de nuevo"
+          'No fue posible iniciar sesión. Intentá de nuevo en unos minutos.'
       );
     }
   };
 
+  // Spec: el botón queda desactivado mientras falten datos; explicamos por qué
+  const showSubmitHint = !isValid && !isSubmitting;
+
   return (
-    <form onSubmit={handleSubmit(handleLogin)} noValidate>
-      <label htmlFor={`${formId}-username`}>Username:</label>
-      <input
-        id={`${formId}-username`}
-        type="text"
-        autoComplete="username"
-        {...register("username")}
-      />
-      {errors.username && <p role="alert">{errors.username.message}</p>}
+    <form className='auth-form' onSubmit={handleSubmit(handleLogin)} noValidate>
+      <div className='auth-form__fields'>
+        <FormField
+          id={`${formId}-username`}
+          label='Usuario'
+          autoComplete='username'
+          autoCapitalize='none'
+          spellCheck={false}
+          autoFocus
+          error={errors.username?.message}
+          {...register('username')}
+        />
 
-      <label htmlFor={`${formId}-password`}>Password:</label>
-      <input
-        id={`${formId}-password`}
-        type="password"
-        autoComplete="current-password"
-        {...register("password")}
-      />
-      {errors.password && <p role="alert">{errors.password.message}</p>}
+        <FormField
+          id={`${formId}-password`}
+          label='Contraseña'
+          type='password'
+          autoComplete='current-password'
+          error={errors.password?.message}
+          {...register('password')}
+        />
+      </div>
 
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
-      <button type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting ? "Logging in..." : "Log in"}
-      </button>
+      <div className='auth-form__actions'>
+        <button
+          type='submit'
+          className='button button--primary auth-form__submit'
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting || undefined}
+          aria-describedby={showSubmitHint ? hintId : undefined}
+        >
+          {isSubmitting ? 'Ingresando…' : 'Ingresar'}
+        </button>
+
+        {showSubmitHint && (
+          <p id={hintId} className='auth-form__submit-hint'>
+            Completá usuario y contraseña para continuar.
+          </p>
+        )}
+      </div>
     </form>
   );
 };

@@ -1,44 +1,18 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createPaginatedSlice } from "../pagination/createPaginatedSlice";
 
-const managersSlice = createSlice({
-  name: "managers",
+const managersSlice = createPaginatedSlice({ name: "managers" });
 
-  initialState: {
-    list: [],
-  },
+// Acciones genéricas (las usa PaginatedTable)
+export const managersActions = managersSlice.actions;
 
-  reducers: {
-    setManagers: (state, action) => {
-      state.list = action.payload;
-    },
-
-    addManager: (state, action) => {
-      state.list.push(action.payload);
-    },
-
-    updateManager: (state, action) => {
-      const index = state.list.findIndex(
-        (manager) => manager._id === action.payload._id
-      );
-
-      if (index !== -1) {
-        state.list[index] = action.payload;
-      }
-    },
-
-    removeManager: (state, action) => {
-      state.list = state.list.filter(
-        (manager) => manager._id !== action.payload
-      );
-    },
-  },
-});
-
+// Nombres propios del recurso para el resto de la app
 export const {
-  setManagers,
-  addManager,
-  updateManager,
-  removeManager,
+  setPage: setManagersPage,
+  updateItem: updateManager,
+  invalidate: invalidateManagers,
+  clear: clearManagers,
 } = managersSlice.actions;
+
+export const selectManagers = (state) => state.managers;
 
 export default managersSlice.reducer;

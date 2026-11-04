@@ -1,17 +1,20 @@
 import { Link } from 'react-router';
+import AuthCard from '../components/auth/AuthCard';
 import LoginForm from '../components/login/LoginForm';
 
 const Login = () => {
   return (
-    <div>
-      <h1>Login</h1>
-      <p>Ingrese sus credenciales</p>
+    <AuthCard
+      title='Iniciar sesión'
+      description='Ingresá con tu usuario y contraseña.'
+      footer={
+        <>
+          ¿Todavía no tenés cuenta? <Link to='/register'>Registrá tu firma</Link>
+        </>
+      }
+    >
       <LoginForm />
-
-      <p>
-        ¿No tienes cuenta? <Link to='/register'>Registrate aca</Link>
-      </p>
-    </div>
+    </AuthCard>
   );
 };
 

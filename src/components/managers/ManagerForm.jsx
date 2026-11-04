@@ -5,8 +5,8 @@ import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
 import { createManagerSchema  } from "../../validators/manager.validators";
 import {
-  setManagers,
   updateManager,
+  invalidateManagers,
 } from "../../features/managers/managers.slice";
 
 const ManagerForm = ({ manager, onSuccess, onCancel }) => {
@@ -69,35 +69,16 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
         );
       } else {
         // Crea un manager nuevo.
+        // El listado se recarga desde la página (vuelve a la página 1,
+        // donde aparece el nuevo manager por estar ordenado del más reciente).
         await backend.post("/manager", data, config);
 
-        // Vuelve a consultar el listado para obtener los registros
-        // con sus IDs y datos definitivos del backend.
-        const allManagers = [];
-        let page = 1;
-        let pages = 1;
-
-        while (page <= pages) {
-          const response = await backend.get("/manager", {
-            ...config,
-            params: {
-              page,
-              limit: 100,
-            },
-          });
-
-          allManagers.push(...response.data.data);
-          pages = response.data.pages;
-          page++;
-        }
-
-        // Busca registros que todavía no estaban disponibles
-        // mediante la recarga completa del listado.
-        dispatch(setManagers(allManagers));
+        // El nuevo manager corre a todos un lugar: descarta la caché de páginas
+        dispatch(invalidateManagers());
       }
 
       // La pagina oculta el formulario.
-      onSuccess();
+      onSuccess({ created: !manager });
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -114,6 +95,7 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
       <input
         id={nameId}
         type="text"
+        autoFocus
         disabled={isSubmitting}
         {...register("fullName")}
       />
@@ -137,20 +119,22 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
 
       {error && <p role="alert">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={!isValid || isSubmitting}
-      >
-        {isSubmitting ? "Guardando..." : "Guardar"}
-      </button>
+      <div className="modal__actions">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </button>
 
-      <button
-        type="button"
-        onClick={onCancel}
-        disabled={isSubmitting}
-      >
-        Cancelar
-      </button>
+        <button
+          type="submit"
+          disabled={!isValid || isSubmitting}
+        >
+          {isSubmitting ? "Guardando..." : "Guardar"}
+        </button>
+      </div>
     </form>
   );
 };

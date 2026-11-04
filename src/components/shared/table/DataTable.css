@@ -1,0 +1,42 @@
+/* Contenedor de la lista: referencia para posicionar el overlay encima */
+.data-table {
+  position: relative;
+}
+
+/* Overlay de carga: cubre la lista sin quitarla, así la UI no cambia de tamaño */
+.data-table__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  cursor: progress;
+}
+
+/* Botones de la columna "Acciones": en línea, con poco espacio entre sí */
+.data-table__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-xs);
+}
+
+.data-table__spinner {
+  font-size: 1.5rem;
+  color: var(--color-action-primary);
+}
+
+/* Primera carga, cuando todavía no hay lista para cubrir */
+.data-table__initial {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-table__spinner {
+    animation: none;
+  }
+}

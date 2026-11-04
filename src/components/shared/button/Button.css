@@ -1,0 +1,54 @@
+/* Tamaño, radio, padding y transición vienen de la base de <button> en App.css;
+   acá solo se define la jerarquía visual */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-inline-sm);
+  font: var(--type-body-strong);
+  border: var(--abk-border-width-1) solid transparent;
+}
+
+/* Primario: acción principal, relleno de marca */
+.button--primary {
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-text);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--color-action-primary-hover);
+}
+
+/* Secundario: superficie con borde */
+.button--secondary {
+  background: var(--color-action-secondary);
+  color: var(--color-action-secondary-text);
+  border-color: var(--color-action-secondary-border);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--color-action-secondary-hover);
+}
+
+/* Terciario: solo texto, sin fondo ni borde */
+.button--tertiary {
+  background: transparent;
+  color: var(--color-text-link);
+}
+
+.button--tertiary:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text-link-hover);
+}
+
+/* Deshabilitado: igual para las tres jerarquías */
+.button:disabled {
+  background: var(--color-action-disabled-bg);
+  color: var(--color-action-disabled-text);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+.button--tertiary:disabled {
+  background: transparent;
+}

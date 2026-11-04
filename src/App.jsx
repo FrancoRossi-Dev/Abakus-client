@@ -7,6 +7,7 @@ import './App.css';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AuthWrapper from './pages/AuthWrapper';
+import GuestLayout from './pages/GuestLayout';
 import Layout from './pages/Layout';
 import Home from './pages/Home';
 import Clients from './pages/Clients';
@@ -21,8 +22,10 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
+          <Route element={<GuestLayout />}>
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
+          </Route>
           <Route element={<AuthWrapper />}>
             <Route element={<Layout />}>
               <Route index path='/' element={<Home />} />

@@ -1,0 +1,29 @@
+/* Pantalla completa con el contenido centrado.
+   `margin: auto` en el hijo centra en ambos ejes y, si el contenido es más alto
+   que la ventana, no lo recorta: simplemente empieza arriba y la página scrollea. */
+.guest {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-section) var(--space-page-gutter-narrow);
+  background: var(--color-bg-app);
+}
+
+.guest__main {
+  width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-stack-lg);
+}
+
+.guest__brand {
+  --logo-size: 2rem;
+}
+
+@media (max-width: 30rem) {
+  .guest {
+    padding-block: var(--space-section-tight);
+  }
+}

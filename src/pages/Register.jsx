@@ -1,19 +1,22 @@
-import { Link } from "react-router";
-import RegisterForm from "../components/register/RegisterForm";
+import { Link } from 'react-router';
+import AuthCard from '../components/auth/AuthCard';
+import RegisterForm from '../components/register/RegisterForm';
 
 const Register = () => {
-  return <div>
-     <h1>Registro</h1>
-      <p>Ingresá tus datos para crear una cuenta.</p>
-
+  return (
+    <AuthCard
+      size='wide'
+      title='Crear cuenta'
+      description='Registrá tu firma asesora para empezar a usar Abakus.'
+      footer={
+        <>
+          ¿Ya tenés cuenta? <Link to='/login'>Iniciá sesión</Link>
+        </>
+      }
+    >
       <RegisterForm />
-
-       <p>
-        ¿Ya tenes cuenta?{" "}
-        <Link to="/login">Inicia sesión acá</Link>
-      </p>
-
-  </div>;
+    </AuthCard>
+  );
 };
 
 export default Register;

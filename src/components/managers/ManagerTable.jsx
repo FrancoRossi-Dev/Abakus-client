@@ -1,76 +1,35 @@
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import backend from "../../api/backend";
+import PaginatedTable from "../shared/table/PaginatedTable";
+import EditButton from "../shared/button/EditButton";
+import DeleteButton from "../shared/button/DeleteButton";
+import { getRole } from "../../utils/utils";
 import {
-  setManagers,
-  removeManager,
+  managersActions,
+  invalidateManagers,
+  selectManagers,
 } from "../../features/managers/managers.slice";
+
+const baseColumns = [
+  { key: "fullName", header: "Nombre completo" },
+  { key: "email", header: "Correo" },
+];
+
+// Solo para el admin: un advisor ve únicamente sus managers, la firma sería siempre la misma
+const firmColumn = {
+  key: "firm",
+  header: "Firma",
+  render: (manager) => manager.advisor?.details?.comercialName ?? "—",
+};
 
 const ManagerTable = ({ onEdit }) => {
   const dispatch = useDispatch();
-  const managers = useSelector((state) => state.managers.list);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const columns = getRole() === "admin" ? [...baseColumns, firmColumn] : baseColumns;
+
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
-
-  // Obtiene el listado al abrir el componente
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadManagers = async () => {
-      try {
-        const token = localStorage.getItem("abakus-token");
-
-        if (!token) {
-          throw new Error("Iniciá sesión para ver los managers.");
-        }
-
-        const allManagers = [];
-        let page = 1;
-        let pages = 1;
-
-        // Obtiene todas las paginas del listado.
-        while (page <= pages && !cancelled) {
-          const response = await backend.get("/manager", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            params: {
-              page,
-              limit: 100,
-            },
-          });
-
-          allManagers.push(...response.data.data);
-          pages = response.data.pages;
-          page++;
-        }
-
-        if (!cancelled) {
-          dispatch(setManagers(allManagers));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setError(
-            error.response?.data?.message ||
-              error.message ||
-              "No se pudieron cargar los managers."
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadManagers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [dispatch]);
 
   const handleDelete = async (manager) => {
     const confirmed = window.confirm(
@@ -94,8 +53,10 @@ const ManagerTable = ({ onEdit }) => {
         },
       });
 
-      // Actualiza solamente si el backend confirmo la baja
-      dispatch(removeManager(manager._id));
+      // Actualiza solamente si el backend confirmo la baja.
+      // Las páginas siguientes se corren un lugar: descarta la caché y
+      // recarga la actual para completar el hueco con el siguiente manager
+      dispatch(invalidateManagers());
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -106,56 +67,33 @@ const ManagerTable = ({ onEdit }) => {
     }
   };
 
-  if (isLoading) {
-    return <p>Cargando managers...</p>;
-  }
+  const renderActions = (manager, { isLoading }) => {
+    const disabled = deletingId !== null || isLoading;
+
+    return (
+      <>
+        <EditButton onClick={() => onEdit(manager)} disabled={disabled} />
+
+        <DeleteButton onClick={() => handleDelete(manager)} disabled={disabled}>
+          {deletingId === manager._id ? "Eliminando..." : "Eliminar"}
+        </DeleteButton>
+      </>
+    );
+  };
 
   return (
     <div>
       {error && <p role="alert">{error}</p>}
 
-      {managers.length === 0 ? (
-        <p>No hay managers registrados.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre completo</th>
-              <th>Correo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {managers.map((manager) => (
-              <tr key={manager._id}>
-                <td>{manager.fullName}</td>
-                <td>{manager.email}</td>
-
-                <td>
-                  <button
-                    type="button"
-                    onClick={() => onEdit(manager)}
-                    disabled={deletingId !== null}
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(manager)}
-                    disabled={deletingId !== null}
-                  >
-                    {deletingId === manager._id
-                      ? "Eliminando..."
-                      : "Eliminar"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <PaginatedTable
+        endpoint="/manager"
+        selectState={selectManagers}
+        actions={managersActions}
+        pageSize={15}
+        columns={columns}
+        itemLabel="managers"
+        renderActions={renderActions}
+      />
     </div>
   );
 };

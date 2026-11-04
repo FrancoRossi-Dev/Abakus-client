@@ -10,7 +10,9 @@
   flex-shrink: 0;
   overflow-y: auto;
   gap: var(--space-stack-lg);
-  padding: var(--space-card-padding);
+  /* 1/5 más chica que el tamaño base: logo 2rem → 1.6rem, padding 24 → 20 px */
+  --logo-size: 1.6rem;
+  padding: var(--space-card-padding-tight);
   background: var(--color-surface-subtle);
   border-right: var(--border-default);
 }
@@ -48,5 +50,25 @@
   flex: 1;
   min-width: 0;
   overflow-y: auto;
+  padding: var(--space-section) var(--space-page-gutter);
   background: var(--color-surface);
+}
+
+/* Contenedor de cada página dentro del main: apila secciones con el espaciado del sistema */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--space-stack-lg);
+}
+
+/* Los botones sueltos no se estiran a todo el ancho */
+.page > button {
+  justify-self: start;
+}
+
+@media (max-width: 48rem) {
+  .layout__main {
+    padding: var(--space-section-tight) var(--space-page-gutter-narrow);
+  }
 }

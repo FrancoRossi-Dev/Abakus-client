@@ -1,40 +1,71 @@
-import { useId, useState } from "react";
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { joiResolver } from "@hookform/resolvers/joi";
-import { registerSchema } from "../../validators/auth.validators";
-import backend from "../../api/backend";
+import { useId, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { joiResolver } from '@hookform/resolvers/joi';
+import { registerSchema } from '../../validators/auth.validators';
+import backend from '../../api/backend';
+import FormField from '../shared/form/FormField';
+import FormAlert from '../shared/form/FormAlert';
+import '../shared/button/Button.css';
 
 const RegisterForm = () => {
   const navigate = useNavigate();
   const formId = useId();
-  const [error, setError] = useState("");
+  const hintId = `${formId}-submit-hint`;
+  const [error, setError] = useState('');
 
   const {
     register,
     handleSubmit,
+    setError: setFieldError,
     formState: { errors, isValid, isSubmitting },
   } = useForm({
     resolver: joiResolver(registerSchema),
-    mode: "onChange",
+    // Muestra el error recién al salir del campo y lo retira apenas se corrige
+    mode: 'onTouched',
     defaultValues: {
-      username: "",
-      password: "",
-      confirmPassword: "",
+      username: '',
+      password: '',
+      confirmPassword: '',
       details: {
-        comercialName: "",
-        legalName: "",
-        document: "",
-        phone: "",
-        contactEmail: "",
-        address: "",
-        country: "",
+        comercialName: '',
+        legalName: '',
+        document: '',
+        phone: '',
+        contactEmail: '',
+        address: '',
+        country: '',
       },
     },
   });
 
+  // Lleva los errores de la API al campo que corresponde, para que se vean al lado del dato.
+  // - 400: details = [{ field: 'details.contactEmail', message }] (mismos nombres que el form)
+  // - 409: details = { username } o { email } (usuario o correo ya registrados)
+  // Devuelve true si marcó al menos un campo.
+  const showServerFieldErrors = (details, message) => {
+    if (Array.isArray(details)) {
+      details.forEach(({ field, message: fieldMessage }) =>
+        setFieldError(field, { type: 'server', message: fieldMessage })
+      );
+      return details.length > 0;
+    }
+
+    if (details?.username) {
+      setFieldError('username', { type: 'server', message });
+      return true;
+    }
+
+    if (details?.email) {
+      setFieldError('details.contactEmail', { type: 'server', message });
+      return true;
+    }
+
+    return false;
+  };
+
   const handleRegister = async (data) => {
-    setError("");
+    setError('');
 
     const { address, country, ...requiredDetails } = data.details;
 
@@ -48,146 +79,145 @@ const RegisterForm = () => {
     };
 
     try {
-      const response = await backend.post("/auth/register", body);
+      const response = await backend.post('/auth/register', body);
 
-      localStorage.setItem("abakus-token", response.data.token);
+      localStorage.setItem('abakus-token', response.data.token);
 
-      navigate("/");
+      navigate('/');
     } catch (error) {
+      const { message, details } = error.response?.data ?? {};
+      const marked = showServerFieldErrors(details, message);
+
       setError(
-        error.response?.data?.message ||
-          "No se pudo crear la cuenta. Intenta nuevamente."
+        marked
+          ? 'Revisá los campos marcados.'
+          : message || 'No se pudo crear la cuenta. Intentá de nuevo en unos minutos.'
       );
     }
   };
 
+  const fieldId = (name) => `${formId}-${name}`;
+  const showSubmitHint = !isValid && !isSubmitting;
+
   return (
-    <form onSubmit={handleSubmit(handleRegister)} noValidate>
-      <h2>Datos de acceso</h2>
+    <form className='auth-form' onSubmit={handleSubmit(handleRegister)} noValidate>
+      <fieldset className='auth-form__section'>
+        <legend className='auth-form__legend'>Datos de acceso</legend>
 
-      <label htmlFor={`${formId}-username`}>Usuario:</label>
-      <input
-        id={`${formId}-username`}
-        type="text"
-        autoComplete="username"
-        {...register("username")}
-      />
-      {errors.username && (
-        <p role="alert">{errors.username.message}</p>
-      )}
+        <FormField
+          id={fieldId('username')}
+          label='Usuario'
+          hint='Entre 3 y 30 caracteres.'
+          autoComplete='username'
+          autoCapitalize='none'
+          spellCheck={false}
+          error={errors.username?.message}
+          {...register('username')}
+        />
 
-      <label htmlFor={`${formId}-password`}>Contraseña:</label>
-      <input
-        id={`${formId}-password`}
-        type="password"
-        autoComplete="new-password"
-        {...register("password")}
-      />
-      {errors.password && (
-        <p role="alert">{errors.password.message}</p>
-      )}
+        <FormField
+          id={fieldId('password')}
+          label='Contraseña'
+          type='password'
+          hint='Entre 6 y 30 caracteres.'
+          autoComplete='new-password'
+          error={errors.password?.message}
+          {...register('password')}
+        />
 
-      <label htmlFor={`${formId}-confirmPassword`}>
-        Repetir contraseña:
-      </label>
-      <input
-        id={`${formId}-confirmPassword`}
-        type="password"
-        autoComplete="new-password"
-        {...register("confirmPassword")}
-      />
-      {errors.confirmPassword && (
-        <p role="alert">{errors.confirmPassword.message}</p>
-      )}
+        <FormField
+          id={fieldId('confirmPassword')}
+          label='Repetir contraseña'
+          type='password'
+          autoComplete='new-password'
+          error={errors.confirmPassword?.message}
+          {...register('confirmPassword')}
+        />
+      </fieldset>
 
-      <h2>Datos de la firma</h2>
+      <fieldset className='auth-form__section'>
+        <legend className='auth-form__legend'>Datos de la firma</legend>
 
-      <label htmlFor={`${formId}-comercialName`}>
-        Nombre comercial:
-      </label>
-      <input
-        id={`${formId}-comercialName`}
-        type="text"
-        {...register("details.comercialName")}
-      />
-      {errors.details?.comercialName && (
-        <p role="alert">{errors.details.comercialName.message}</p>
-      )}
+        <FormField
+          id={fieldId('comercialName')}
+          label='Nombre comercial'
+          autoComplete='organization'
+          error={errors.details?.comercialName?.message}
+          {...register('details.comercialName')}
+        />
 
-      <label htmlFor={`${formId}-legalName`}>Razón social:</label>
-      <input
-        id={`${formId}-legalName`}
-        type="text"
-        {...register("details.legalName")}
-      />
-      {errors.details?.legalName && (
-        <p role="alert">{errors.details.legalName.message}</p>
-      )}
+        <FormField
+          id={fieldId('legalName')}
+          label='Razón social'
+          error={errors.details?.legalName?.message}
+          {...register('details.legalName')}
+        />
 
-      <label htmlFor={`${formId}-document`}>Documento:</label>
-      <input
-        id={`${formId}-document`}
-        type="text"
-        {...register("details.document")}
-      />
-      {errors.details?.document && (
-        <p role="alert">{errors.details.document.message}</p>
-      )}
+        <FormField
+          id={fieldId('document')}
+          label='Documento'
+          autoComplete='off'
+          error={errors.details?.document?.message}
+          {...register('details.document')}
+        />
 
-      <label htmlFor={`${formId}-phone`}>Teléfono:</label>
-      <input
-        id={`${formId}-phone`}
-        type="tel"
-        autoComplete="tel"
-        {...register("details.phone")}
-      />
-      {errors.details?.phone && (
-        <p role="alert">{errors.details.phone.message}</p>
-      )}
+        <FormField
+          id={fieldId('phone')}
+          label='Teléfono'
+          type='tel'
+          autoComplete='tel'
+          error={errors.details?.phone?.message}
+          {...register('details.phone')}
+        />
 
-      <label htmlFor={`${formId}-contactEmail`}>
-        Correo de contacto:
-      </label>
-      <input
-        id={`${formId}-contactEmail`}
-        type="email"
-        autoComplete="email"
-        {...register("details.contactEmail")}
-      />
-      {errors.details?.contactEmail && (
-        <p role="alert">{errors.details.contactEmail.message}</p>
-      )}
+        <FormField
+          id={fieldId('contactEmail')}
+          label='Correo de contacto'
+          type='email'
+          autoComplete='email'
+          spellCheck={false}
+          error={errors.details?.contactEmail?.message}
+          {...register('details.contactEmail')}
+        />
 
-      <label htmlFor={`${formId}-address`}>
-        Dirección (opcional):
-      </label>
-      <input
-        id={`${formId}-address`}
-        type="text"
-        {...register("details.address")}
-      />
-      {errors.details?.address && (
-        <p role="alert">{errors.details.address.message}</p>
-      )}
+        <FormField
+          id={fieldId('address')}
+          label='Dirección'
+          optional
+          autoComplete='street-address'
+          error={errors.details?.address?.message}
+          {...register('details.address')}
+        />
 
-      <label htmlFor={`${formId}-country`}>País (opcional):</label>
-      <input
-        id={`${formId}-country`}
-        type="text"
-        {...register("details.country")}
-      />
-      {errors.details?.country && (
-        <p role="alert">{errors.details.country.message}</p>
-      )}
+        <FormField
+          id={fieldId('country')}
+          label='País'
+          optional
+          autoComplete='country-name'
+          error={errors.details?.country?.message}
+          {...register('details.country')}
+        />
+      </fieldset>
 
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
-      <button
-        type="submit"
-        disabled={!isValid || isSubmitting}
-      >
-        {isSubmitting ? "Creando cuenta..." : "Registrarse"}
-      </button>
+      <div className='auth-form__actions'>
+        <button
+          type='submit'
+          className='button button--primary auth-form__submit'
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting || undefined}
+          aria-describedby={showSubmitHint ? hintId : undefined}
+        >
+          {isSubmitting ? 'Creando cuenta…' : 'Registrarse'}
+        </button>
+
+        {showSubmitHint && (
+          <p id={hintId} className='auth-form__submit-hint'>
+            Completá los campos obligatorios para crear la cuenta.
+          </p>
+        )}
+      </div>
     </form>
   );
 };
