@@ -1,90 +1,69 @@
+import { useId, useState } from "react";
 import { useNavigate } from "react-router";
-import { useId, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { joiResolver } from "@hookform/resolvers/joi";
+import { loginSchema } from "../../validators/auth.validators";
 import backend from "../../api/backend";
 
 const LoginForm = () => {
   const navigate = useNavigate();
-
-  const usernameId = useId();
-  const usernameRef = useRef();
-
-  const passwordId = useId();
-  const passwordRef = useRef();
-
-  const [areFieldsFilled, setAreFieldsFilled] = useState(false);
+  const formId = useId();
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const validateFields = () => {
-    const username = usernameRef.current.value.trim();
-    const password = passwordRef.current.value;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm({
+    resolver: joiResolver(loginSchema),
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-    setAreFieldsFilled(username !== "" && password !== "");
-  };
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
+  const handleLogin = async (data) => {
     setError("");
 
-    const username = usernameRef.current.value.trim();
-    const password = passwordRef.current.value;
-
-    if (!username || !password) {
-      setError("Por favor, complete todos los campos.");
-      return;
-    }
-
     try {
-      setIsLoading(true);
-
-      const response = await backend.post("/auth/login", {
-        username,
-        password,
-      });
+      const response = await backend.post("/auth/login", data);
 
       // Save the token
-     localStorage.setItem("abakus-token", response.data.token);
-     navigate("/");
-
+      localStorage.setItem("abakus-token", response.data.token);
+      navigate("/");
     } catch (error) {
       setError(
         error.response?.data?.message ||
           "No es posible iniciar sesión. Por favor, inténtalo de nuevo"
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <label htmlFor={usernameId}>Username:</label>
+    <form onSubmit={handleSubmit(handleLogin)} noValidate>
+      <label htmlFor={`${formId}-username`}>Username:</label>
       <input
+        id={`${formId}-username`}
         type="text"
-        id={usernameId}
-        ref={usernameRef}
-        onChange={validateFields}
         autoComplete="username"
-        required
+        {...register("username")}
       />
+      {errors.username && <p role="alert">{errors.username.message}</p>}
 
-      <label htmlFor={passwordId}>Password:</label>
+      <label htmlFor={`${formId}-password`}>Password:</label>
       <input
+        id={`${formId}-password`}
         type="password"
-        id={passwordId}
-        ref={passwordRef}
-        onChange={validateFields}
         autoComplete="current-password"
-        required
+        {...register("password")}
       />
+      {errors.password && <p role="alert">{errors.password.message}</p>}
 
       {error && <p role="alert">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={!areFieldsFilled || isLoading}
-      >
-        {isLoading ? "Logging in..." : "Log in"}
+      <button type="submit" disabled={!isValid || isSubmitting}>
+        {isSubmitting ? "Logging in..." : "Log in"}
       </button>
     </form>
   );
