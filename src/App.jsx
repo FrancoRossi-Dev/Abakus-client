@@ -14,6 +14,7 @@ import Accounts from './pages/Accounts';
 import Unauthorized from './pages/Unauthorized';
 import NotFound from './pages/NotFound';
 import store from './store/store';
+import Managers from "./pages/Managers";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
               <Route index path='/' element={<Home />} />
               <Route path='/clients' element={<Clients />} />
               <Route path='/account' element={<Accounts />} />
+              <Route path="/managers" element={<Managers />} />
             </Route>
           </Route>
           <Route path='/unauthorized' element={<Unauthorized />} />
