@@ -12,7 +12,7 @@ const Managers = () => {
 
   const [selectedManager, setSelectedManager] = useState(null);
 
-  // Cambiarlo remonta la tabla: vuelve a la página 1 y recarga el listado
+  // gestiona pagination
   const [tableKey, setTableKey] = useState(0);
 
   const handleAdd = () => {
@@ -49,6 +49,7 @@ const Managers = () => {
         isOpen={showForm}
         onClose={handleClose}
         title={selectedManager ? 'Editar manager' : 'Agregar manager'}>
+        {/* el formulario se renderiza dentro del componente modal */}
         <ManagerForm manager={selectedManager} onSuccess={handleSuccess} onCancel={handleClose} />
       </Modal>
     </div>

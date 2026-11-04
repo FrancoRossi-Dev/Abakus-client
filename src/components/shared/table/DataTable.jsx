@@ -1,63 +1,46 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import "./DataTable.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import './DataTable.css';
 
-/**
- * Tabla presentacional: recibe los datos por props y no sabe de dónde vienen.
- *
- * @param {Array}    columns        [{ key, header, render?: (row) => node }]
- * @param {Array}    data           filas; undefined = primera carga (sin lista que cubrir)
- * @param {boolean}  isLoading      muestra el overlay con spinner sobre la lista actual
- * @param {string}   error          mensaje de error
- * @param {Function} renderActions  (row) => botones de la columna "Acciones" (opcional)
- * @param {Function} getRowKey      (row) => key única (por defecto row._id)
- * @param {object}   pagination     { page, pages, total, onPageChange } (opcional)
- * @param {string}   itemLabel      nombre plural de los items, para textos
- */
 const DataTable = ({
   columns,
   data,
   isLoading = false,
-  error = "",
+  error = '',
   renderActions,
   getRowKey = (row) => row._id,
   pagination,
-  itemLabel = "registros",
+  itemLabel = 'registros',
   emptyMessage = `No hay ${itemLabel} registrados.`,
 }) => {
-  const spinner = (
-    <FontAwesomeIcon icon={faSpinner} spin className="data-table__spinner" />
-  );
+  const spinner = <FontAwesomeIcon icon={faSpinner} spin className='data-table__spinner' />;
   const loadingText = `Cargando ${itemLabel}...`;
 
   // Primera carga: todavía no hay ninguna lista para mostrar
   if (data === undefined) {
-    return error ? (
-      <p role="alert">{error}</p>
-    ) : (
-      <div className="data-table__initial" role="status">
-        {spinner}
-        <span>{loadingText}</span>
-      </div>
-    );
+    return error ?
+        <p role='alert'>{error}</p>
+      : <div className='data-table__initial' role='status'>
+          {spinner}
+          <span>{loadingText}</span>
+        </div>;
   }
 
   return (
     <div>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role='alert'>{error}</p>}
 
-      <div className="data-table" aria-busy={isLoading}>
+      <div className='data-table' aria-busy={isLoading}>
         {isLoading && (
-          <div className="data-table__overlay" role="status">
+          <div className='data-table__overlay' role='status'>
             {spinner}
-            <span className="sr-only">{loadingText}</span>
+            <span className='sr-only'>{loadingText}</span>
           </div>
         )}
 
-        {data.length === 0 ? (
+        {data.length === 0 ?
           <p>{emptyMessage}</p>
-        ) : (
-          <table>
+        : <table>
             <thead>
               <tr>
                 {columns.map((column) => (
@@ -71,42 +54,37 @@ const DataTable = ({
               {data.map((row) => (
                 <tr key={getRowKey(row)}>
                   {columns.map((column) => (
-                    <td key={column.key}>
-                      {column.render ? column.render(row) : row[column.key]}
-                    </td>
+                    <td key={column.key}>{column.render ? column.render(row) : row[column.key]}</td>
                   ))}
                   {renderActions && (
                     <td>
-                      <div className="data-table__actions">{renderActions(row)}</div>
+                      <div className='data-table__actions'>{renderActions(row)}</div>
                     </td>
                   )}
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
+        }
       </div>
 
       {pagination && pagination.pages > 1 && (
         <nav aria-label={`Paginación de ${itemLabel}`}>
           <button
-            type="button"
+            type='button'
             onClick={() => pagination.onPageChange(pagination.page - 1)}
-            disabled={pagination.page <= 1 || isLoading}
-          >
+            disabled={pagination.page <= 1 || isLoading}>
             Anterior
           </button>
 
           <span>
-            Página {pagination.page} de {pagination.pages} ({pagination.total}{" "}
-            {itemLabel})
+            Página {pagination.page} de {pagination.pages} ({pagination.total} {itemLabel})
           </span>
 
           <button
-            type="button"
+            type='button'
             onClick={() => pagination.onPageChange(pagination.page + 1)}
-            disabled={pagination.page >= pagination.pages || isLoading}
-          >
+            disabled={pagination.page >= pagination.pages || isLoading}>
             Siguiente
           </button>
         </nav>
