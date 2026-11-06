@@ -1,0 +1,94 @@
+.upgrade-plan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-stack-lg);
+}
+
+.upgrade-plan__card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-card-padding);
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-card);
+}
+
+.upgrade-plan__card h2 {
+  margin: 0 0 var(--space-stack-md);
+}
+
+.upgrade-plan__usage + .upgrade-plan__usage {
+  margin-top: var(--space-stack-md);
+}
+
+.upgrade-plan__usage-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-stack-xs);
+  font: var(--type-body-strong);
+}
+
+.upgrade-plan__bar {
+  height: 8px;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.upgrade-plan__bar-fill {
+  height: 100%;
+  background: var(--color-action-primary);
+  border-radius: var(--radius-pill);
+}
+
+.upgrade-plan__bar-fill--full {
+  background: var(--color-danger, #b42318);
+}
+
+.upgrade-plan__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.upgrade-plan__table th,
+.upgrade-plan__table td {
+  padding: var(--space-stack-sm) var(--space-cell-x);
+  border-bottom: var(--border-default);
+  text-align: center;
+}
+
+.upgrade-plan__table th[scope='row'],
+.upgrade-plan__table thead th:first-child {
+  text-align: left;
+}
+
+.upgrade-plan__current {
+  background: var(--color-surface-selected);
+}
+
+.upgrade-plan__badge {
+  display: inline-block;
+  margin-left: var(--space-inline-xs);
+  padding: 0 var(--space-inline-sm);
+  font: var(--type-meta);
+  color: var(--color-text-inverse);
+  background: var(--color-action-primary);
+  border-radius: var(--radius-pill);
+}
+
+.upgrade-plan__yes {
+  color: var(--color-success);
+  font-weight: bold;
+}
+
+.upgrade-plan__no {
+  color: var(--color-text-muted);
+}
+
+.upgrade-plan__done {
+  padding: var(--space-stack-sm) var(--space-inline-lg);
+  color: var(--color-success);
+  background: var(--color-success-surface);
+  border-radius: var(--radius-control);
+}

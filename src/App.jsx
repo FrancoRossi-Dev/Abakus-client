@@ -20,6 +20,7 @@ import Banks from './pages/Admin/Banks';
 import Issuers from './pages/Admin/Issuers';
 import Instruments from './pages/Admin/Instruments';
 import Advisors from './pages/Admin/Advisors';
+import UpgradePlan from './pages/Advisor/UpgradePlan';
 
 function App() {
   return (
@@ -33,13 +34,18 @@ function App() {
           <Route element={<AuthWrapper />}>
             <Route element={<Layout />}>
               <Route index path='/' element={<Home />} />
+
+              {/* rutas de advisor */}
               <Route path='/clients' element={<Clients />} />
               <Route path='/account' element={<Accounts />} />
+              <Route path='/managers' element={<Managers />} />
+              <Route path='/upgrade' element={<UpgradePlan />} />
+
+              {/* rutas de administrador */}
               <Route path='/advisors' element={<Advisors />} />
               <Route path='/banks' element={<Banks />} />
               <Route path='/issuers' element={<Issuers />} />
               <Route path='/instruments' element={<Instruments />} />
-              <Route path='/managers' element={<Managers />} />
             </Route>
           </Route>
           <Route path='/unauthorized' element={<Unauthorized />} />

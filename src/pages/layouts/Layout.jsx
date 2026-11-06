@@ -53,10 +53,10 @@ const Layout = () => {
                   <NavLink to='/managers'>Managers</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/positions'>Posiciones</NavLink>
+                  <NavLink to='/account'>Cuenta</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/account'>Cuenta</NavLink>
+                  <NavLink to='/upgrade'>Mi plan</NavLink>
                 </li>
               </>
             )}
@@ -79,12 +79,6 @@ const Layout = () => {
                   <NavLink to='/instruments'>Instrumentos</NavLink>
                 </li>
               </>
-            )}
-
-            {(isAdmin || isAdvisor) && (
-              <li>
-                <NavLink to='/instruments'>Instrumentos</NavLink>
-              </li>
             )}
           </ul>
         </nav>
