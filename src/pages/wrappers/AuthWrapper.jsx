@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { getToken } from '../utils/utils';
+import { getToken } from '../../utils/utils';
 
 const AuthWrapper = () => {
   const isAuth = getToken();

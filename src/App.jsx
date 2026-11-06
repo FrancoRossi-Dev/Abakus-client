@@ -6,16 +6,20 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import AuthWrapper from './pages/AuthWrapper';
-import GuestLayout from './pages/GuestLayout';
-import Layout from './pages/Layout';
+import AuthWrapper from './pages/wrappers/AuthWrapper';
+import GuestLayout from './pages/layouts/GuestLayout';
+import Layout from './pages/layouts/Layout';
 import Home from './pages/Home';
 import Clients from './pages/Clients';
 import Accounts from './pages/Accounts';
-import Unauthorized from './pages/Unauthorized';
-import NotFound from './pages/NotFound';
+import Unauthorized from './pages/generic/Unauthorized';
+import NotFound from './pages/generic/NotFound';
 import store from './store/store';
-import Managers from "./pages/Managers";
+import Managers from './pages/Managers';
+import Banks from './pages/Admin/Banks';
+import Issuers from './pages/Admin/Issuers';
+import Instruments from './pages/Admin/Instruments';
+import Advisors from './pages/Admin/Advisors';
 
 function App() {
   return (
@@ -31,7 +35,11 @@ function App() {
               <Route index path='/' element={<Home />} />
               <Route path='/clients' element={<Clients />} />
               <Route path='/account' element={<Accounts />} />
-              <Route path="/managers" element={<Managers />} />
+              <Route path='/advisors' element={<Advisors />} />
+              <Route path='/banks' element={<Banks />} />
+              <Route path='/issuers' element={<Issuers />} />
+              <Route path='/instruments' element={<Instruments />} />
+              <Route path='/managers' element={<Managers />} />
             </Route>
           </Route>
           <Route path='/unauthorized' element={<Unauthorized />} />

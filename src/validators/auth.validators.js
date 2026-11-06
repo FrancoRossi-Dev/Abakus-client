@@ -11,10 +11,11 @@ const textMessages = (label, reason) => ({
 const usernameMessages = textMessages('Username', 'to identify your advisor account');
 const passwordMessages = textMessages('Password', 'to secure your account');
 
-const username = Joi.string().trim().min(3).max(30).required().messages(usernameMessages);
-const password = Joi.string().min(6).max(30).required().messages(passwordMessages);
+// Exportados para el formulario de advisors del admin (advisor.validators.js)
+export const username = Joi.string().trim().min(3).max(30).required().messages(usernameMessages);
+export const password = Joi.string().min(6).max(30).required().messages(passwordMessages);
 
-const advisorDetailsSchema = Joi.object({
+export const advisorDetailsSchema = Joi.object({
   comercialName: Joi.string()
     .trim()
     .max(100)

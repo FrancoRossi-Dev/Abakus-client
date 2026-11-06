@@ -72,6 +72,22 @@ export const updateInstrumentSchema = Joi.object({
     "object.min": "At least one field must be provided for update.",
   });
 
+// Formulario de edición del cliente: solo los campos editables a mano.
+// El issuerId lo agrega InstrumentForm desde el instrumento original.
+export const editInstrumentFormSchema = Joi.object({
+  name: Joi.string().trim().max(100).required().messages({
+    "string.base": "Instrument name must be text.",
+    "string.empty": "Instrument name is required.",
+    "string.max": "Instrument name must be at most {#limit} characters long.",
+    "any.required": "Instrument name is required.",
+  }),
+  type: Joi.string().valid(...INSTRUMENT_TYPES).required().messages({
+    "any.only": INVALID_TYPE_MESSAGE,
+    "any.required": INVALID_TYPE_MESSAGE,
+  }),
+  ticker: marketText("Ticker", 20).allow(""),
+});
+
 // GET /v1/instrument filters; q searches the name and the ticker
 export const instrumentQuerySchema = paginationQuerySchema.keys({
   type: Joi.string().valid(...INSTRUMENT_TYPES).messages({
