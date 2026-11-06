@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { loginSchema } from '../../validators/auth.validators';
 import backend from '../../api/backend';
+import { setToken } from '../../utils/utils';
 import FormField from '../shared/form/FormField';
 import FormAlert from '../shared/form/FormAlert';
 import '../shared/button/Button.css';
@@ -34,11 +35,11 @@ const LoginForm = () => {
     try {
       const response = await backend.post('/auth/login', data);
 
-      localStorage.setItem('abakus-token', response.data.token);
+      setToken(response.data.token);
       navigate('/');
     } catch (error) {
       setError(
-        error.response?.data?.message ||
+        error.userMessage ||
           'No fue posible iniciar sesión. Intentá de nuevo en unos minutos.'
       );
     }

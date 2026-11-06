@@ -45,21 +45,10 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
     setError("");
 
     try {
-      const token = localStorage.getItem("abakus-token");
-
-      if (!token) {
-        throw new Error("Iniciá sesión para guardar el manager.");
-      }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
+      // El token lo agrega el interceptor de backend.js
       if (manager) {
         // Modifica el manager seleccionado.
-        await backend.patch(`/manager/${manager._id}`, data, config);
+        await backend.patch(`/manager/${manager._id}`, data);
 
         dispatch(
           updateManager({
@@ -71,7 +60,7 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
         // Crea un manager nuevo.
         // El listado se recarga desde la página (vuelve a la página 1,
         // donde aparece el nuevo manager por estar ordenado del más reciente).
-        await backend.post("/manager", data, config);
+        await backend.post("/manager", data);
 
         // El nuevo manager corre a todos un lugar: descarta la caché de páginas
         dispatch(invalidateManagers());
@@ -80,11 +69,7 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
       // La pagina oculta el formulario.
       onSuccess({ created: !manager });
     } catch (error) {
-      setError(
-        error.response?.data?.message ||
-          error.message ||
-          "No se pudo guardar el manager."
-      );
+      setError(error.userMessage || "No se pudo guardar el manager.");
     }
   };
 

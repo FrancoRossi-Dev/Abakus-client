@@ -44,14 +44,8 @@ export const usePaginatedResource = ({
 
     const loadPage = async () => {
       try {
-        const token = localStorage.getItem("abakus-token");
-
-        if (!token) {
-          throw new Error("Iniciá sesión para ver este listado.");
-        }
-
+        // El token lo agrega el interceptor de backend.js
         const response = await backend.get(endpoint, {
-          headers: { Authorization: `Bearer ${token}` },
           params: { page, limit: pageSize },
         });
 
@@ -70,11 +64,7 @@ export const usePaginatedResource = ({
         );
       } catch (error) {
         if (!cancelled) {
-          setError(
-            error.response?.data?.message ||
-              error.message ||
-              "No se pudo cargar el listado."
-          );
+          setError(error.userMessage || "No se pudo cargar el listado.");
         }
       }
     };

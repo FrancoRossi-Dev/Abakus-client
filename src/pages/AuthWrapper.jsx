@@ -1,7 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
+import { getToken } from '../utils/utils';
 
 const AuthWrapper = () => {
-  const isAuth = localStorage.getItem('abakus-token');
+  const isAuth = getToken();
   const location = useLocation();
   // @TODO cambiar
 

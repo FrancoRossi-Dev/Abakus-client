@@ -44,20 +44,15 @@ const ManagerTable = ({ onEdit }) => {
     try {
       setDeletingId(manager._id);
 
-      const token = localStorage.getItem('abakus-token');
-
-      await backend.delete(`/manager/${manager._id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // El token lo agrega el interceptor de backend.js
+      await backend.delete(`/manager/${manager._id}`);
 
       // Actualiza solamente si el backend confirmo la baja.
       // Las páginas siguientes se corren un lugar: descarta la caché y
       // recarga la actual para completar el hueco con el siguiente manager
       dispatch(invalidateManagers());
     } catch (error) {
-      setError(error.response?.data?.message || 'No se pudo eliminar el manager.');
+      setError(error.userMessage || 'No se pudo eliminar el manager.');
     } finally {
       setDeletingId(null);
     }

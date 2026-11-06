@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { registerSchema } from '../../validators/auth.validators';
 import backend from '../../api/backend';
+import { setToken } from '../../utils/utils';
 import FormField from '../shared/form/FormField';
 import FormAlert from '../shared/form/FormAlert';
 import '../shared/button/Button.css';
@@ -81,7 +82,7 @@ const RegisterForm = () => {
     try {
       const response = await backend.post('/auth/register', body);
 
-      localStorage.setItem('abakus-token', response.data.token);
+      setToken(response.data.token);
 
       navigate('/');
     } catch (error) {
@@ -91,7 +92,7 @@ const RegisterForm = () => {
       setError(
         marked
           ? 'Revisá los campos marcados.'
-          : message || 'No se pudo crear la cuenta. Intentá de nuevo en unos minutos.'
+          : error.userMessage || 'No se pudo crear la cuenta. Intentá de nuevo en unos minutos.'
       );
     }
   };
