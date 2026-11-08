@@ -5,6 +5,7 @@ import banksReducer from "../features/banks/banks.slice";
 import issuersReducer from "../features/issuers/issuers.slice";
 import instrumentsReducer from "../features/instruments/instruments.slice";
 import advisorsReducer from "../features/advisors/advisors.slice";
+import reportsReducer from "../features/reports/reports.slice";
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     issuers: issuersReducer,
     instruments: instrumentsReducer,
     advisors: advisorsReducer,
+    reports: reportsReducer,
   },
 });
 

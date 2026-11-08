@@ -1,0 +1,57 @@
+.reports {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.reports__detail {
+  overflow-x: auto;
+}
+
+.reports__detail section {
+  margin-bottom: 24px;
+}
+
+.reports__banks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.reports__bank {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.reports__bank span {
+  display: block;
+  margin-top: 8px;
+}
+
+.reports__bank {
+  text-align: left;
+  cursor: pointer;
+}
+
+.reports__bank[aria-pressed="true"] {
+  border-color: #2563eb;
+  box-shadow: inset 0 0 0 1px #2563eb;
+}
+
+.reports__chart {
+  max-width: 360px;
+}
+
+.reports__analysis {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .reports {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

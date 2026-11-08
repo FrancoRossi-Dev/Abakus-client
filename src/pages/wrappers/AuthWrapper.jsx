@@ -1,13 +1,16 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { getToken } from '../../utils/utils';
+import { getToken, getRole } from '../../utils/utils';
 
-const AuthWrapper = () => {
+const AuthWrapper = ({allowedRoles}) => {
   const isAuth = getToken();
   const location = useLocation();
   // @TODO cambiar
 
   if (!isAuth) {
     return <Navigate to='/login' replace state={{ from: location }} />;
+  }
+  if (allowedRoles && !allowedRoles.includes(getRole())) {
+  return <Navigate to='/unauthorized' replace />;
   }
 
   return <Outlet />;
