@@ -11,6 +11,7 @@ import GuestLayout from './pages/layouts/GuestLayout';
 import Layout from './pages/layouts/Layout';
 import Home from './pages/Home';
 import Clients from './pages/Advisor/Clients';
+import ClientDetail from './pages/Advisor/ClientDetail';
 import Accounts from './pages/Accounts';
 import Unauthorized from './pages/generic/Unauthorized';
 import NotFound from './pages/generic/NotFound';
@@ -37,6 +38,7 @@ function App() {
 
               {/* rutas de advisor */}
               <Route path='/clients' element={<Clients />} />
+              <Route path='/clients/:clientId' element={<ClientDetail />} />
 
               <Route path='/account' element={<Accounts />} />
               <Route path='/managers' element={<Managers />} />

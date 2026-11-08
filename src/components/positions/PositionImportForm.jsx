@@ -47,16 +47,16 @@ const Steps = ({ current }) => (
   </ol>
 );
 
-const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
+// client: el cliente ya elegido en la lista de la página; acá solo se elige banco, cuenta y archivo
+const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
   // campos se registan con id de useID para los campos del formulario
-  const clientFieldId = useId();
   const bankFieldId = useId();
   const accountFieldId = useId();
   const fileFieldId = useId();
   const purchaseDateFieldId = useId();
 
   // estados de los seletores y el archivo subido
-  const [clientId, setClientId] = useState('');
+  const clientId = client._id;
   const [bankId, setBankId] = useState('');
   const [bankAccountId, setBankAccountId] = useState('');
   const [file, setFile] = useState(null);
@@ -75,28 +75,19 @@ const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
   const [error, setError] = useState('');
   const [rowErrors, setRowErrors] = useState([]);
 
-  const selectedClient = clients.find((client) => client._id === clientId);
-
-  // Cuentas activas del cliente elegido en el banco elegido
-  let accounts = [];
-  if (selectedClient && bankId) {
-    accounts = selectedClient.bankAccounts.filter(
-      (account) => account.bankId === bankId && !account.isDeleted,
-    );
-  }
+  // Cuentas activas del cliente en el banco elegido
+  const accounts =
+    bankId ?
+      client.bankAccounts.filter((account) => account.bankId === bankId && !account.isDeleted)
+    : [];
 
   const selectedAccount = accounts.find((account) => account._id === bankAccountId);
   const selectedBank = banks.find((bank) => bank._id === bankId);
 
-  const canReview = clientId && bankId && bankAccountId && file && !isSubmitting;
-  const hasNoAccounts = clientId && bankId && accounts.length === 0;
+  const canReview = bankId && bankAccountId && file && !isSubmitting;
+  const hasNoAccounts = bankId && accounts.length === 0;
 
-  // Al cambiar el cliente o el banco, la cuenta elegida deja de valer
-  const handleClientChange = (event) => {
-    setClientId(event.target.value);
-    setBankAccountId('');
-  };
-
+  // Al cambiar el banco, la cuenta elegida deja de valer
   const handleBankChange = (event) => {
     setBankId(event.target.value);
     setBankAccountId('');
@@ -200,7 +191,7 @@ const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
         <dl className='import-summary'>
           <div className='import-summary__item'>
             <dt>Cliente</dt>
-            <dd>{selectedClient.clientDetails.commercialName}</dd>
+            <dd>{client.clientDetails.commercialName}</dd>
           </div>
           <div className='import-summary__item'>
             <dt>Cuenta</dt>
@@ -246,20 +237,13 @@ const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
     <form className='position-import' onSubmit={handleReview} noValidate>
       <Steps current={1} />
 
-      <FormField
-        as='select'
-        id={clientFieldId}
-        label='Cliente'
-        value={clientId}
-        onChange={handleClientChange}
-        disabled={isSubmitting}>
-        <option value=''>Elegí un cliente</option>
-        {clients.map((client) => (
-          <option key={client._id} value={client._id}>
-            {client.clientDetails.commercialName}
-          </option>
-        ))}
-      </FormField>
+      {/* El cliente se eligió en la lista: acá solo se muestra */}
+      <dl className='import-summary'>
+        <div className='import-summary__item'>
+          <dt>Cliente</dt>
+          <dd>{client.clientDetails.commercialName}</dd>
+        </div>
+      </dl>
 
       <div className='position-import__row'>
         <FormField
@@ -281,7 +265,7 @@ const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
           as='select'
           id={accountFieldId}
           label='Cuenta'
-          hint={!clientId || !bankId ? 'Elegí primero el cliente y el banco.' : undefined}
+          hint={!bankId ? 'Elegí primero el banco.' : undefined}
           value={bankAccountId}
           onChange={(event) => setBankAccountId(event.target.value)}
           disabled={isSubmitting || accounts.length === 0}>

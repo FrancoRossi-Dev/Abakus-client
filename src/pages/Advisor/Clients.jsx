@@ -23,6 +23,10 @@ const Clients = () => {
   const [banks, setBanks] = useState([]);
   const [managers, setManagers] = useState([]);
 
+  // cliente elegido en la tabla: habilita "Importar posiciones"
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const selectedClient = clients.find((client) => client._id === selectedClientId);
+
   const [showImportForm, setShowImportForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
 
@@ -92,7 +96,6 @@ const Clients = () => {
     }
   };
 
-  const hasClients = clients.length > 0;
   const isReady = !isLoading && !error;
 
   return (
@@ -105,21 +108,22 @@ const Clients = () => {
           </p>
         </div>
 
-        {/* Acción principal a la derecha; la secundaria con menos peso visual (spec §7) */}
+        {/* Acción principal (importar) a la derecha; la secundaria con menos peso visual (spec §7) */}
         {isReady && (
           <div className='page__actions'>
             <Button
               type='secondary'
-              icon={FiUpload}
-              label='Importar posiciones'
-              onClick={handleOpenImport}
-              disabled={!hasClients}
-            />
-            <Button
-              type='primary'
               icon={FiPlus}
               label='Registrar cliente'
               onClick={handleOpenClientForm}
+            />
+            <Button
+              type='primary'
+              icon={FiUpload}
+              label='Importar posiciones'
+              title={selectedClient ? undefined : 'Seleccioná un cliente de la lista'}
+              onClick={handleOpenImport}
+              disabled={!selectedClient}
             />
           </div>
         )}
@@ -141,7 +145,13 @@ const Clients = () => {
 
       {/* tabla con datos de cliente */}
       {isReady && (
-        <ClientTable clients={clients} managers={managers} onCreate={handleOpenClientForm} />
+        <ClientTable
+          clients={clients}
+          managers={managers}
+          onCreate={handleOpenClientForm}
+          selectedClientId={selectedClientId}
+          onSelect={setSelectedClientId}
+        />
       )}
 
       {/* Modal de alta de cliente */}
@@ -160,12 +170,14 @@ const Clients = () => {
 
       {/* Modal de ingreso de datos */}
       <Modal isOpen={showImportForm} onClose={handleCloseImport} title='Importar posiciones'>
-        <PositionImportForm
-          clients={clients}
-          banks={banks}
-          onSuccess={handleImportSuccess}
-          onCancel={handleCloseImport}
-        />
+        {selectedClient && (
+          <PositionImportForm
+            client={selectedClient}
+            banks={banks}
+            onSuccess={handleImportSuccess}
+            onCancel={handleCloseImport}
+          />
+        )}
       </Modal>
     </div>
   );

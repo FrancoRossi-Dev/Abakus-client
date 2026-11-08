@@ -1,6 +1,8 @@
 import { useId, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { FiPlus, FiSearch, FiX } from 'react-icons/fi';
 import DataTable from '../shared/table/DataTable';
+import EditButton from '../shared/button/EditButton';
 import Button from '../shared/button/Button';
 import './ClientTable.css';
 
@@ -23,8 +25,10 @@ const normalize = (text = '') =>
 
 const compareText = (a, b) => (a || '').localeCompare(b || '', 'es', { sensitivity: 'base' });
 
-const ClientTable = ({ clients, managers, onCreate }) => {
+// selectedClientId / onSelect: el cliente elegido en la lista (para importar sus posiciones)
+const ClientTable = ({ clients, managers, onCreate, selectedClientId, onSelect }) => {
   const searchId = useId();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState({ key: 'commercialName', direction: 'asc' });
 
@@ -178,6 +182,11 @@ const ClientTable = ({ clients, managers, onCreate }) => {
         data={visibleRows}
         sort={sort}
         onSort={handleSort}
+        selectedKey={selectedClientId}
+        onRowSelect={onSelect && ((row) => onSelect(row._id))}
+        renderActions={(row) => (
+          <EditButton onClick={() => navigate(`/clients/${row._id}`)}>Gestionar</EditButton>
+        )}
         itemLabel='clientes'
         emptyMessage={noResults}
       />
