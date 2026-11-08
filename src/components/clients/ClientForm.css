@@ -1,0 +1,70 @@
+/* Formulario agrupado en secciones con título, sin tarjetas de más (spec §5) */
+.client-form {
+  display: grid;
+  gap: var(--space-stack-lg);
+}
+
+.client-form__section {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.client-form__section + .client-form__section {
+  padding-top: var(--space-stack-lg);
+  border-top: var(--border-default);
+}
+
+/* float saca a la legend de su posición especial sobre el borde del fieldset:
+   así pasa a ser una fila más de la grilla y respeta el mismo espaciado */
+.client-form__legend {
+  float: left;
+  width: 100%;
+  font: var(--type-subtitle);
+  color: var(--color-text);
+}
+
+.client-form__optional {
+  font: var(--type-body);
+  color: var(--color-text-muted);
+}
+
+.client-form__hint {
+  color: var(--color-text-muted);
+}
+
+/* Dos columnas en el modal ancho; una sola en pantallas angostas */
+.client-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-stack-md) var(--space-inline-lg);
+  align-items: start;
+}
+
+/* Cada cuenta es un grupo con borde sutil para distinguirla de la siguiente */
+.client-form__account {
+  padding: var(--space-card-padding-tight);
+  border: var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+.client-form__account-title {
+  float: left;
+  margin-bottom: var(--space-stack-md);
+  font: var(--type-body-strong);
+  color: var(--color-text);
+}
+
+.client-form__remove {
+  float: right;
+  margin-top: calc(-1 * var(--space-stack-xs));
+}
+
+.client-form__account .client-form__grid {
+  clear: both;
+}
+
+.client-form__add {
+  justify-self: start;
+  margin-inline-start: calc(-1 * var(--space-control-x));
+}

@@ -67,6 +67,63 @@
   justify-self: start;
 }
 
+/* Botones de acción de la página, en fila; en pantallas angostas pasan a la línea siguiente */
+.page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-inline-sm);
+}
+
+/* Encabezado de página: título y descripción a la izquierda, acciones a la derecha */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-stack-md) var(--space-inline-lg);
+}
+
+.page-header__text {
+  display: grid;
+  gap: var(--space-stack-xs);
+}
+
+.page-header__subtitle {
+  color: var(--color-text-muted);
+}
+
+/* Carga y error a nivel página */
+.page-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  padding: var(--abk-space-10) 0;
+  color: var(--color-text-muted);
+}
+
+.page-status__spinner {
+  font-size: 1.25rem;
+  color: var(--color-action-primary);
+}
+
+.page-error {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-stack-md);
+  max-width: 40rem;
+}
+
+.page-error .form-alert {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-status__spinner {
+    animation: none;
+  }
+}
+
 @media (max-width: 48rem) {
   .layout__main {
     padding: var(--space-section-tight) var(--space-page-gutter-narrow);

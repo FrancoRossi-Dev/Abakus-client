@@ -1,0 +1,33 @@
+/* Muchas columnas: la tabla se desplaza dentro de este contenedor, con el encabezado fijo */
+.position-preview {
+  overflow: auto;
+  max-height: 50vh;
+  border: var(--border-default);
+  border-radius: var(--radius-card);
+}
+
+.position-preview .data-table {
+  overflow: visible;
+}
+
+.position-preview thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.position-preview td {
+  white-space: nowrap;
+}
+
+.position-preview tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.position-preview code {
+  font-size: var(--abk-font-size-12);
+}
+
+.position-preview__empty {
+  color: var(--color-text-muted);
+}

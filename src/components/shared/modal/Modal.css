@@ -11,6 +11,16 @@
   max-height: calc(100vh - 2 * var(--space-page-gutter-narrow));
 }
 
+.modal--lg {
+  width: min(44rem, calc(100vw - 2 * var(--space-page-gutter-narrow)));
+}
+
+/* Tablas dentro del modal (ej. vista previa de importación) */
+.modal--xl,
+.modal:has(.modal-content--wide) {
+  width: min(64rem, calc(100vw - 2 * var(--space-page-gutter-narrow)));
+}
+
 /* Overlay negro transparente */
 .modal::backdrop {
   background: rgb(0 0 0 / 0.5);
@@ -42,9 +52,12 @@ html:has(.modal[open]) {
    alineado a la derecha, la acción principal va última */
 .modal__actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--space-inline-sm);
   margin-top: var(--space-stack-lg);
+  padding-top: var(--space-stack-md);
+  border-top: var(--border-default);
 }
 
 .modal__close {

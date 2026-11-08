@@ -7,6 +7,12 @@
   gap: var(--space-inline-sm);
   font: var(--type-body-strong);
   border: var(--abk-border-width-1) solid transparent;
+  white-space: nowrap;
+}
+
+.button__icon {
+  flex-shrink: 0;
+  font-size: 1rem;
 }
 
 /* Primario: acción principal, relleno de marca */

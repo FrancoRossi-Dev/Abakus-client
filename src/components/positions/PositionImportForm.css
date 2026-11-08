@@ -1,0 +1,88 @@
+.position-import {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.position-import__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-stack-md) var(--space-inline-lg);
+  align-items: start;
+}
+
+.position-import__date {
+  max-width: 16rem;
+}
+
+/* --- Pasos --- */
+.import-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-inline-sm) var(--space-inline-lg);
+  padding: 0 0 var(--space-stack-md);
+  margin-bottom: var(--space-stack-xs);
+  list-style: none;
+  border-bottom: var(--border-default);
+}
+
+.import-steps__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  font: var(--type-body);
+  color: var(--color-text-muted);
+}
+
+.import-steps__number {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: var(--abk-border-width-1) solid var(--color-border-control);
+  border-radius: var(--radius-pill);
+  font: var(--type-meta);
+  font-weight: var(--abk-font-weight-semibold);
+}
+
+.import-steps__item--current {
+  font: var(--type-body-strong);
+  color: var(--color-text);
+}
+
+.import-steps__item--current .import-steps__number {
+  background: var(--color-action-primary);
+  border-color: var(--color-action-primary);
+  color: var(--color-action-primary-text);
+}
+
+.import-steps__item--done .import-steps__number {
+  background: var(--color-surface-selected);
+  border-color: var(--color-surface-selected);
+  color: var(--color-action-primary);
+}
+
+/* --- Resumen del destino de la importación --- */
+.import-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-stack-md) var(--space-section);
+  padding: var(--space-card-padding-tight);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+.import-summary__item {
+  display: grid;
+  gap: var(--space-stack-xs);
+}
+
+.import-summary dt {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+}
+
+.import-summary dd {
+  font: var(--type-body-strong);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
