@@ -1,13 +1,13 @@
-import { NavLink, Outlet, useNavigate } from 'react-router';
-import { useDispatch } from 'react-redux';
-import Logo from '../../components/brand/Logo';
-import { clearManagers } from '../../features/managers/managers.slice';
-import { clearBanks } from '../../features/banks/banks.slice';
-import { clearIssuers } from '../../features/issuers/issuers.slice';
-import { clearInstruments } from '../../features/instruments/instruments.slice';
-import { clearAdvisors } from '../../features/advisors/advisors.slice';
-import './Layout.css';
-import { getRole, logout } from '../../utils/utils';
+import { NavLink, Outlet, useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
+import Logo from "../../components/brand/Logo";
+import { clearManagers } from "../../features/managers/managers.slice";
+import { clearBanks } from "../../features/banks/banks.slice";
+import { clearIssuers } from "../../features/issuers/issuers.slice";
+import { clearInstruments } from "../../features/instruments/instruments.slice";
+import { clearAdvisors } from "../../features/advisors/advisors.slice";
+import "./Layout.css";
+import { getRole, logout } from "../../utils/utils";
 
 // Reads the role from the JWT payload (the API signs { id, role }).
 // This only decides what the sidebar shows; the API still enforces access.
@@ -18,8 +18,8 @@ const Layout = () => {
 
   // revisa rol y habilita navegacion dependiendo de lo que diga el token
   const role = getRole();
-  const isAdmin = role === 'admin';
-  const isAdvisor = role === 'advisor';
+  const isAdmin = role === "admin";
+  const isAdvisor = role === "advisor";
 
   const handleLogout = () => {
     logout();
@@ -29,17 +29,17 @@ const Layout = () => {
     dispatch(clearIssuers());
     dispatch(clearInstruments());
     dispatch(clearAdvisors());
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   };
 
   return (
-    <div className='layout'>
-      <aside className='sidebar'>
+    <div className="layout">
+      <aside className="sidebar">
         <Logo />
-        <nav className='sidebar__nav'>
+        <nav className="sidebar__nav">
           <ul>
             <li>
-              <NavLink to='/' end>
+              <NavLink to="/" end>
                 Inicio
               </NavLink>
             </li>
@@ -47,16 +47,19 @@ const Layout = () => {
             {isAdvisor && (
               <>
                 <li>
-                  <NavLink to='/clients'>Clientes</NavLink>
+                  <NavLink to="/clients">Clientes</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/managers'>Managers</NavLink>
+                  <NavLink to="/managers">Managers</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/account'>Cuenta</NavLink>
+                  <NavLink to="/account">Cuenta</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/upgrade'>Mi plan</NavLink>
+                  <NavLink to="/reports">Reportes</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/upgrade">Mi plan</NavLink>
                 </li>
               </>
             )}
@@ -64,29 +67,29 @@ const Layout = () => {
             {isAdmin && (
               <>
                 <li>
-                  <NavLink to='/managers'>Managers</NavLink>
+                  <NavLink to="/managers">Managers</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/advisors'>Advisors</NavLink>
+                  <NavLink to="/advisors">Advisors</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/banks'>Bancos</NavLink>
+                  <NavLink to="/banks">Bancos</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/issuers'>Emisores</NavLink>
+                  <NavLink to="/issuers">Emisores</NavLink>
                 </li>
                 <li>
-                  <NavLink to='/instruments'>Instrumentos</NavLink>
+                  <NavLink to="/instruments">Instrumentos</NavLink>
                 </li>
               </>
             )}
           </ul>
         </nav>
-        <button type='button' onClick={handleLogout}>
+        <button type="button" onClick={handleLogout}>
           Cerrar sesión
         </button>
       </aside>
-      <main className='layout__main'>
+      <main className="layout__main">
         <Outlet />
       </main>
     </div>

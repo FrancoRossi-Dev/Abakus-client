@@ -21,6 +21,7 @@ import Issuers from "./pages/Admin/Issuers";
 import Instruments from "./pages/Admin/Instruments";
 import Advisors from "./pages/Admin/Advisors";
 import UpgradePlan from "./pages/Advisor/UpgradePlan";
+import Reports from "./pages/Advisor/Reports";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/account" element={<Accounts />} />
                 <Route path="/upgrade" element={<UpgradePlan />} />
+                <Route path="/reports" element={<Reports />} />
               </Route>
 
               <Route element={<AuthWrapper allowedRoles={["admin"]} />}>
