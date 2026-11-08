@@ -1,6 +1,46 @@
-/* Contenedor de la lista: referencia para posicionar el overlay encima */
+/* Contenedor de la lista: referencia para posicionar el overlay encima.
+   En pantallas angostas la tabla se desplaza dentro de él en vez de romper la página (spec §13) */
 .data-table {
   position: relative;
+  overflow-x: auto;
+}
+
+/* Encabezado ordenable: ocupa toda la celda para que el área de click sea amplia */
+.data-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  min-height: var(--size-target-min);
+  margin-inline: calc(-1 * var(--space-inline-sm));
+  padding: 0 var(--space-inline-sm);
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  white-space: nowrap;
+}
+
+th[data-align='end'] .data-table__sort {
+  flex-direction: row-reverse;
+}
+
+.data-table__sort:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.data-table__sort-icon {
+  font-size: 0.75rem;
+  color: var(--color-text-disabled);
+}
+
+.data-table__sort--active .data-table__sort-icon {
+  color: var(--color-action-primary);
+}
+
+.data-table__empty {
+  padding: var(--space-stack-lg) 0;
+  color: var(--color-text-muted);
 }
 
 /* Overlay de carga: cubre la lista sin quitarla, así la UI no cambia de tamaño */

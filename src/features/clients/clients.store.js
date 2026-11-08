@@ -3,21 +3,18 @@ import { createSlice } from '@reduxjs/toolkit';
 // viky este es un ejemplo de slice
 
 const initialState = {
-  foo: 'bar',
+  clients: [],
 };
 
 export const clientSlice = createSlice({
   name: 'clients',
   initialState,
   reducers: {
-    reducer1: (red) => {
-      red;
-    },
-    reducer2: (red) => {
-      red;
+    addToSlice: (state, action) => {
+      state.clients.push(...action.payload);
     },
   },
 });
 
-export const { reducer1, reducer2 } = clientSlice.actions;
+export const { addToSlice } = clientSlice.actions;
 export default clientSlice.reducer;

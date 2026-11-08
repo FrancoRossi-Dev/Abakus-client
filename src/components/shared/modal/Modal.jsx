@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import './Modal.css';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+// size: "md" (predeterminado, formularios cortos) | "lg" (formularios en dos columnas) | "xl" (tablas)
+const Modal = ({ isOpen, onClose, title, size = 'md', children }) => {
   const dialogRef = useRef(null);
   const titleId = useId();
 
@@ -27,7 +28,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <dialog
       ref={dialogRef}
-      className='modal'
+      className={`modal modal--${size}`}
       aria-labelledby={title ? titleId : undefined}
       onClick={handleClick}
       onCancel={handleCancel}>

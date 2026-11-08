@@ -1,8 +1,41 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortDown, faSortUp, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import './DataTable.css';
 
+const ARIA_SORT = { asc: 'ascending', desc: 'descending' };
+
+// Encabezado de columna. Si la columna es ordenable (column.sortable + onSort),
+// el encabezado es un botón y la dirección activa se ve con icono y aria-sort (spec §8.3).
+const HeaderCell = ({ column, sort, onSort }) => {
+  if (!column.sortable || !onSort) {
+    return <th data-align={column.align}>{column.header}</th>;
+  }
+
+  const isActive = sort?.key === column.key;
+  const direction = isActive ? sort.direction : undefined;
+  const icon =
+    direction === 'asc' ? faSortUp
+    : direction === 'desc' ? faSortDown
+    : faSort;
+
+  return (
+    <th data-align={column.align} aria-sort={isActive ? ARIA_SORT[direction] : undefined}>
+      <button
+        type='button'
+        className={`data-table__sort${isActive ? ' data-table__sort--active' : ''}`}
+        onClick={() => onSort(column.key)}>
+        <span>{column.header}</span>
+        <FontAwesomeIcon icon={icon} aria-hidden='true' className='data-table__sort-icon' />
+      </button>
+    </th>
+  );
+};
+
+// columns: [{ key, header, render?, align?: 'end', sortable? }]
+// sort: { key, direction: 'asc' | 'desc' } — el orden de los datos lo resuelve quien usa la tabla
 const DataTable = ({
+  sort,
+  onSort,
   columns,
   data,
   isLoading = false,
@@ -39,12 +72,12 @@ const DataTable = ({
         )}
 
         {data.length === 0 ?
-          <p>{emptyMessage}</p>
+          <div className='data-table__empty'>{emptyMessage}</div>
         : <table>
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th key={column.key}>{column.header}</th>
+                  <HeaderCell key={column.key} column={column} sort={sort} onSort={onSort} />
                 ))}
                 {renderActions && <th>Acciones</th>}
               </tr>
@@ -54,7 +87,9 @@ const DataTable = ({
               {data.map((row) => (
                 <tr key={getRowKey(row)}>
                   {columns.map((column) => (
-                    <td key={column.key}>{column.render ? column.render(row) : row[column.key]}</td>
+                    <td key={column.key} data-align={column.align}>
+                      {column.render ? column.render(row) : row[column.key]}
+                    </td>
                   ))}
                   {renderActions && (
                     <td>

@@ -18,8 +18,35 @@
   position: relative;
 }
 
-.form-field__control input:hover:not(:disabled, [aria-invalid='true']) {
+.form-field__control input:hover:not(:disabled, [aria-invalid='true']),
+.form-field__control select:hover:not(:disabled, [aria-invalid='true']) {
   border-color: var(--color-border-strong);
+}
+
+/* Selector de archivo: el botón nativo toma la apariencia de un botón secundario */
+.form-field__control input[type='file'] {
+  display: flex;
+  align-items: center;
+  padding: var(--abk-space-1);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.form-field__control input[type='file']::file-selector-button {
+  min-height: calc(var(--size-control-height) - 2 * var(--abk-space-1) - 2px);
+  margin-inline-end: var(--space-inline-md);
+  padding: 0 var(--space-control-x);
+  font: var(--type-body-strong);
+  color: var(--color-action-secondary-text);
+  background: var(--color-surface-subtle);
+  border: var(--border-default);
+  border-radius: calc(var(--radius-control) - 2px);
+  cursor: pointer;
+  transition: background-color var(--motion-fast);
+}
+
+.form-field__control input[type='file']:hover:not(:disabled)::file-selector-button {
+  background: var(--color-surface-hover);
 }
 
 /* Espacio para el botón de mostrar contraseña */
@@ -81,6 +108,38 @@
   background: var(--color-error-surface);
 }
 
+.form-alert--warning {
+  color: var(--color-warning);
+  background: var(--color-warning-surface);
+}
+
+.form-alert--info {
+  color: var(--color-info);
+  background: var(--color-info-surface);
+}
+
 .form-alert__icon {
   flex-shrink: 0;
+}
+
+.form-alert__content {
+  display: grid;
+  gap: var(--space-stack-xs);
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.form-alert__title {
+  font: var(--type-body-strong);
+}
+
+.form-alert__content ul {
+  display: grid;
+  gap: var(--space-stack-xs);
+  max-height: 10rem;
+  overflow-y: auto;
+}
+
+.form-alert__content a {
+  font-weight: var(--abk-font-weight-medium);
 }
