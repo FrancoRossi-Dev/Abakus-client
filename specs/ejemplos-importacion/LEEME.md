@@ -1,40 +1,61 @@
 # Ejemplos de importación de posiciones
 
-Archivos `.xlsx` en el formato que acepta el formulario "Importar posiciones desde Excel" (`/clients`).
-Se generaron a partir del extracto real `../FONDOS_UNICO_ANONIMIZADO FINAL.xlsx`, hoja `POSICIONES UBS`, sección "Positions at portfolio level".
+Reportes de banco en el formato que acepta "Importar posiciones" (`/clients`). Un reporte trae posiciones de **varios clientes y cuentas**: no se elige cliente antes de subirlo, cada fila se asocia sola al leer el archivo.
+
+Los datos son ficticios y coinciden con los que crea el seed de la API (`Abakus-api/scripts/seed-data.js`): 9 bancos, 10 clientes y una cuenta por cliente en cada banco.
 
 ## Formato
 
-La primera fila tiene los encabezados y cada fila siguiente es una posición. Cada archivo corresponde a **una cuenta**.
+La primera fila tiene los encabezados y cada fila siguiente es una posición. El orden de las columnas no importa y las columnas desconocidas (ej. `description`) se ignoran.
 
-| Columna | Obligatoria | Contenido | Sale de (extracto UBS) |
+| Columna | Obligatoria | Contenido | Campo de la API |
 |---|---|---|---|
-| ISIN | sí | Código de 12 caracteres, ej. `US0378331005` | `ISIN` |
-| Cantidad | sí | Número positivo | `Number/Amt.` |
-| Precio de compra | sí | Número positivo | `Cost price` |
-| Precio actual | no | Número positivo | `Market price` |
-| Valor de mercado | no | Número positivo | `Market value` |
-| Moneda | sí | Código, ej. `USD` | `Ccy.` |
-| Fecha de compra | no* | Fecha | — (el banco no la informa) |
-| Fecha de reporte | no | Fecha | `Valuation date` |
+| `Bank` | sí | Nombre del banco, ej. `UBS` | — (sirve para asociar la cuenta) |
+| `numberAccount` | sí | Número de cuenta, ej. `04-240001` | — (sirve para asociar la cuenta) |
+| `nameAccount` | sí | Nombre del cliente, ej. `Yuji Itadori` | — (sirve para asociar el cliente) |
+| `ISIN` | sí | Código de 12 caracteres, ej. `US0378331005` | `isin` |
+| `Quantity` | sí | Número positivo | `quantity` |
+| `costPrice` | sí | Número positivo | `purchasePrice` |
+| `marketPrice` | no | Número positivo | `currentPrice` |
+| `marketValue` | no | Número positivo | `marketValue` |
+| `current` | sí | Moneda, ej. `USD` | `currency` |
+| `dateOfPurchase` | no* | Fecha | `dateOfPurchase` |
+| `dateOfReport` | no | Fecha | `dateOfReport` |
 
-\* La API exige la fecha de compra. Si la columna viene vacía, se usa la fecha que se carga en el campo "Fecha de compra" del formulario.
+\* La API exige la fecha de compra. Si la celda viene vacía, se usa la "Fecha de compra predeterminada" del formulario.
+
+## Cómo se asocia cada fila
+
+1. **Cliente**: `nameAccount` contra el nombre comercial o la razón social de los clientes del advisor, sin distinguir mayúsculas, tildes ni espacios de más.
+2. **Cuenta**: dentro de ese cliente, la cuenta activa del banco `Bank` con número `numberAccount`.
+3. Si un nombre no coincide con ningún cliente, se avisa y se elige el cliente en un desplegable (o "No importar estas posiciones").
+4. Si el cliente coincide pero la cuenta no, se elige una de sus cuentas activas en un desplegable (o "No importar").
+5. "Importar" se habilita cuando todo está asociado u omitido. Se envía todo en un solo `POST /v1/position`: si la API rechaza alguna fila, no se guarda ninguna y el error indica la fila del Excel.
 
 ## Archivos
 
-| Archivo | Cuenta UBS | Posiciones | Monedas |
-|---|---|---|---|
-| `posiciones-0663-00588579.xlsx` | 0663 00588579 | 3 | USD |
-| `posiciones-0663-00766250.xlsx` | 0663 00766250 | 12 | USD |
-| `posiciones-0755-00949475.xlsx` | 0755 00949475 | 35 | USD, EUR |
-| `posiciones-con-errores.xlsx` | (varias) | 8 | — |
+| Archivo | Contenido | Filas |
+|---|---|---|
+| `posiciones-todos-los-bancos.xlsm` | Reporte completo, los 9 bancos (origen de los demás) | 900 |
+| `posiciones-morgan-stanley.xlsx`, `posiciones-jpm.xlsx`, `posiciones-stonex.xlsx`, `posiciones-ubs.xlsx`, `posiciones-ubp.xlsx`, `posiciones-julius-baer.xlsx`, `posiciones-edr.xlsx`, `posiciones-lgt.xlsx`, `posiciones-efg.xlsx` | Un banco cada uno: 10 clientes × 10 posiciones | 100 |
+| `posiciones-para-asociar.xlsx` | UBS, para probar la asociación manual (ver abajo) | 12 |
+| `posiciones-con-errores.xlsx` | Errores de datos por fila (ver abajo) | 8 |
 
-`posiciones-con-errores.xlsx` sirve para probar los errores por fila. Las filas 2 y 3 son válidas. El resto son filas reales que la API rechaza: dos sin ISIN (depósitos y opciones), dos con cantidad negativa (posiciones cortas) y dos sin precio de compra.
+`posiciones-para-asociar.xlsx` tiene 4 clientes de 3 posiciones:
+
+- `Yuji Itadori`: se asocia solo.
+- `  megumi FUSHIGURO `: escrito distinto, se asocia solo igual.
+- `Gon Freecss`: no existe; pide elegir el cliente (las cuentas son las de `Satoru Gojo`, así que eligiéndolo se asocian solas).
+- `Maomao` con la cuenta `04-999999`: el cliente existe pero la cuenta no; pide elegir la cuenta.
+
+`posiciones-con-errores.xlsx`: las filas 2 y 3 son válidas. Después, una falla por fila: sin ISIN (4), ISIN incompleto (5), cantidad negativa (6), sin precio de compra (7), sin moneda (8) y fecha de compra inválida (9). Estos errores se muestran antes de asociar y hay que corregir el archivo.
 
 ## Para probarlos
 
-1. Tener un cliente con una cuenta activa en el banco UBS. El número de la cuenta no tiene que coincidir, porque la cuenta se elige en el formulario, pero conviene usar el de la tabla.
-2. En `/clients`, hacer click en "Importar posiciones desde Excel" y elegir el cliente, el banco, la cuenta, el archivo y la fecha de compra.
-3. "Revisar" muestra la vista previa y "Confirmar importación" envía las posiciones.
+1. En la API, correr el seed (`node scripts/seed-data.js`) y entrar con el advisor que crea.
+2. En `/clients`, "Importar posiciones" (no hace falta elegir cliente) y subir un archivo.
+3. Revisar la asociación y el resumen por cliente; "Importar N posiciones" las envía.
 
 El servidor busca cada ISIN en OpenFIGI. Si alguno no se encuentra, la API lo informa por fila.
+
+Los `.xlsx` se generaron desde el `.xlsm` con un script aparte (no forma parte del proyecto); si se cambia el reporte completo, hay que volver a generarlos.
