@@ -2,7 +2,9 @@ import { useState } from 'react';
 import IssuerTable from '../../components/issuers/IssuerTable';
 import IssuerForm from '../../components/issuers/IssuerForm';
 import Modal from '../../components/shared/modal/Modal';
+import { FiPlus } from 'react-icons/fi';
 import Button from '../../components/shared/button/Button';
+import PageHeader from '../../components/shared/page/PageHeader';
 
 const Issuers = () => {
   const [showForm, setShowForm] = useState(false);
@@ -34,11 +36,11 @@ const Issuers = () => {
 
   return (
     <div className='page'>
-      <h1>Emisores</h1>
-
-      <p>Administrá el catálogo de emisores.</p>
-
-      <Button type='primary' label='Agregar nuevo emisor' onClick={handleAdd} />
+      <PageHeader
+        title='Emisores'
+        subtitle='Administrá el catálogo de emisores.'
+        actions={<Button type='primary' icon={FiPlus} label='Agregar emisor' onClick={handleAdd} />}
+      />
 
       <IssuerTable key={tableKey} onEdit={handleEdit} />
 

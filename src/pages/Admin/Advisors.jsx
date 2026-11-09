@@ -2,7 +2,9 @@ import { useState } from 'react';
 import AdvisorTable from '../../components/advisors/AdvisorTable';
 import AdvisorForm from '../../components/advisors/AdvisorForm';
 import Modal from '../../components/shared/modal/Modal';
+import { FiPlus } from 'react-icons/fi';
 import Button from '../../components/shared/button/Button';
+import PageHeader from '../../components/shared/page/PageHeader';
 
 const Advisors = () => {
   const [showForm, setShowForm] = useState(false);
@@ -34,11 +36,11 @@ const Advisors = () => {
 
   return (
     <div className='page'>
-      <h1>Advisors</h1>
-
-      <p>Administrá las cuentas de los advisors registrados en el sistema.</p>
-
-      <Button type='primary' label='Agregar nuevo advisor' onClick={handleAdd} />
+      <PageHeader
+        title='Advisors'
+        subtitle='Administrá las cuentas de los advisors registrados en el sistema.'
+        actions={<Button type='primary' icon={FiPlus} label='Agregar advisor' onClick={handleAdd} />}
+      />
 
       <AdvisorTable key={tableKey} onEdit={handleEdit} />
 

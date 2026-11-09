@@ -1,16 +1,43 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
+import {
+  FiBarChart2,
+  FiBriefcase,
+  FiCreditCard,
+  FiHome,
+  FiLayers,
+  FiLogOut,
+  FiStar,
+  FiUserCheck,
+  FiUsers,
+} from "react-icons/fi";
+import { MdOutlineAccountBalance } from "react-icons/md";
 import Logo from "../../components/brand/Logo";
 import { clearManagers } from "../../features/managers/managers.slice";
 import { clearBanks } from "../../features/banks/banks.slice";
 import { clearIssuers } from "../../features/issuers/issuers.slice";
 import { clearInstruments } from "../../features/instruments/instruments.slice";
 import { clearAdvisors } from "../../features/advisors/advisors.slice";
+import { clearNewsAnalysis } from "../../features/reports/newsAnalysis.slice";
 import "./Layout.css";
 import { getRole, logout } from "../../utils/utils";
 
-// Reads the role from the JWT payload (the API signs { id, role }).
-// This only decides what the sidebar shows; the API still enforces access.
+// Navegación por rol. Solo decide qué muestra el menú; la API sigue controlando el acceso.
+const ADVISOR_LINKS = [
+  { to: "/clients", label: "Clientes", icon: FiUsers },
+  { to: "/managers", label: "Managers", icon: FiUserCheck },
+  { to: "/reports", label: "Reportes", icon: FiBarChart2 },
+  { to: "/account", label: "Cuenta", icon: FiCreditCard },
+  { to: "/upgrade", label: "Mi plan", icon: FiStar },
+];
+
+const ADMIN_LINKS = [
+  { to: "/managers", label: "Managers", icon: FiUserCheck },
+  { to: "/advisors", label: "Advisors", icon: FiBriefcase },
+  { to: "/banks", label: "Bancos", icon: MdOutlineAccountBalance },
+  { to: "/issuers", label: "Emisores", icon: FiLayers },
+  { to: "/instruments", label: "Instrumentos", icon: FiBarChart2 },
+];
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -18,8 +45,10 @@ const Layout = () => {
 
   // revisa rol y habilita navegacion dependiendo de lo que diga el token
   const role = getRole();
-  const isAdmin = role === "admin";
-  const isAdvisor = role === "advisor";
+  const links = [
+    { to: "/", label: "Inicio", icon: FiHome, end: true },
+    ...(role === "admin" ? ADMIN_LINKS : role === "advisor" ? ADVISOR_LINKS : []),
+  ];
 
   const handleLogout = () => {
     logout();
@@ -29,6 +58,7 @@ const Layout = () => {
     dispatch(clearIssuers());
     dispatch(clearInstruments());
     dispatch(clearAdvisors());
+    dispatch(clearNewsAnalysis());
     navigate("/login", { replace: true });
   };
 
@@ -36,58 +66,26 @@ const Layout = () => {
     <div className="layout">
       <aside className="sidebar">
         <Logo />
-        <nav className="sidebar__nav">
+        <nav className="sidebar__nav" aria-label="Navegación principal">
           <ul>
-            <li>
-              <NavLink to="/" end>
-                Inicio
-              </NavLink>
-            </li>
-
-            {isAdvisor && (
-              <>
-                <li>
-                  <NavLink to="/clients">Clientes</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/managers">Managers</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/account">Cuenta</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/reports">Reportes</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/upgrade">Mi plan</NavLink>
-                </li>
-              </>
-            )}
-
-            {isAdmin && (
-              <>
-                <li>
-                  <NavLink to="/managers">Managers</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/advisors">Advisors</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/banks">Bancos</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/issuers">Emisores</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/instruments">Instrumentos</NavLink>
-                </li>
-              </>
-            )}
+            {links.map(({ to, label, icon: Icon, end }) => (
+              <li key={to}>
+                <NavLink to={to} end={end}>
+                  <Icon aria-hidden="true" className="sidebar__icon" />
+                  <span>{label}</span>
+                </NavLink>
+              </li>
+            ))}
           </ul>
         </nav>
-        <button type="button" onClick={handleLogout}>
-          Cerrar sesión
-        </button>
+
+        <div className="sidebar__footer">
+          {role && <p className="sidebar__role">{role === "admin" ? "Administrador" : "Advisor"}</p>}
+          <button type="button" className="sidebar__logout" onClick={handleLogout}>
+            <FiLogOut aria-hidden="true" className="sidebar__icon" />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
       </aside>
       <main className="layout__main">
         <Outlet />

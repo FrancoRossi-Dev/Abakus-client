@@ -62,19 +62,17 @@ const IssuerTable = ({ onEdit }) => {
   };
 
   return (
-    <div>
-      {error && <p role='alert'>{error}</p>}
-
-      <PaginatedTable
-        endpoint='/issuer'
-        selectState={selectIssuers}
-        actions={issuersActions}
-        pageSize={15}
-        columns={columns}
-        itemLabel='emisores'
-        renderActions={renderActions}
-      />
-    </div>
+    <PaginatedTable
+      title='Catálogo de emisores'
+      actionError={error}
+      endpoint='/issuer'
+      selectState={selectIssuers}
+      actions={issuersActions}
+      pageSize={15}
+      columns={columns}
+      itemLabel='emisores'
+      renderActions={renderActions}
+    />
   );
 };
 

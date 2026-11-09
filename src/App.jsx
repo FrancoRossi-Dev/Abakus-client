@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
+import "./styles/patterns.css";
 import store from "./store/store";
 
 import AuthWrapper from "./pages/wrappers/AuthWrapper";

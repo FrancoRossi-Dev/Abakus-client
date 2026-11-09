@@ -100,3 +100,38 @@ th[data-align='end'] .data-table__sort {
     animation: none;
   }
 }
+
+.data-table__error {
+  margin-bottom: var(--space-stack-md);
+}
+
+.panel .data-table__error {
+  margin: var(--space-stack-md) var(--space-card-padding);
+}
+
+/* Paginación: posición actual a la izquierda, controles a la derecha */
+.data-table__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-stack-sm) var(--space-inline-lg);
+  padding-block: var(--space-stack-md);
+  border-top: var(--border-default);
+}
+
+.data-table__page-info {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table__page-buttons {
+  display: flex;
+  gap: var(--space-inline-sm);
+}
+
+/* "Siguiente" lleva el icono después del texto */
+.data-table__next {
+  flex-direction: row-reverse;
+}

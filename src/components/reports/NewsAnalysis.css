@@ -1,0 +1,311 @@
+.news-analysis {
+  display: grid;
+  gap: var(--space-stack-lg);
+}
+
+.news-analysis > .card__header:not(:last-child) {
+  margin-bottom: 0;
+}
+
+.news-analysis .card__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-inline-sm);
+}
+
+.news-analysis__muted {
+  color: var(--color-text-muted);
+}
+
+.news-analysis__intro {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-stack-md);
+  max-width: 44rem;
+}
+
+.news-analysis__intro .form-alert {
+  width: 100%;
+}
+
+/* --- Cargando --- */
+.news-analysis__loading {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.news-analysis__loading-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  color: var(--color-text-muted);
+}
+
+/* --- Metadatos: cuándo se generó, qué período y qué alcance (spec §10, vigencia de datos) --- */
+.news-analysis__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-stack-sm) var(--space-section);
+  margin: 0;
+  padding: var(--space-stack-md) var(--space-inline-lg);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-control);
+}
+
+.news-analysis__meta div {
+  display: grid;
+  gap: 2px;
+}
+
+.news-analysis__meta dt {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+}
+
+.news-analysis__meta dd {
+  margin: 0;
+  font: var(--type-body-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Posiciones analizadas --- */
+.news-analysis__positions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-inline-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-analysis__position {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-sm);
+  padding: var(--abk-space-1) var(--space-inline-md);
+  border: var(--border-default);
+  border-radius: var(--radius-pill);
+  font: var(--type-body);
+}
+
+.news-analysis__position-share {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Fuentes --- */
+.news-analysis__section {
+  display: grid;
+  gap: var(--space-stack-md);
+  padding-top: var(--space-stack-lg);
+  border-top: var(--border-default);
+}
+
+.news-analysis__section-title {
+  font: var(--type-subtitle);
+}
+
+.news-analysis__count {
+  font: var(--type-body);
+  color: var(--color-text-muted);
+}
+
+.news-analysis__sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-stack-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-analysis__source {
+  display: grid;
+  align-content: start;
+  gap: var(--space-stack-xs);
+  padding: var(--space-stack-sm) var(--space-inline-md);
+  border: var(--border-default);
+  border-radius: var(--radius-control);
+  transition: border-color var(--motion-fast), background-color var(--motion-fast);
+}
+
+.news-analysis__source:hover {
+  background: var(--color-surface-subtle);
+  border-color: var(--color-border-strong);
+}
+
+.news-analysis__source a {
+  display: grid;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.news-analysis__source-title {
+  font: var(--type-body-strong);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-analysis__source-host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inline-xs);
+  font: var(--type-meta);
+  color: var(--color-text-link);
+}
+
+.news-analysis__source .status-tag {
+  justify-self: start;
+}
+
+.news-analysis__details summary {
+  width: fit-content;
+  padding: var(--abk-space-1) 0;
+  color: var(--color-text-link);
+  font: var(--type-body-strong);
+  cursor: pointer;
+}
+
+.news-analysis__details[open] summary {
+  margin-bottom: var(--space-stack-sm);
+}
+
+.news-analysis__disclaimer {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   Texto en markdown que devuelve la IA: lectura cómoda (16/24, ~72 caracteres por línea)
+   ========================================================================== */
+.markdown {
+  max-width: 72ch;
+  font: var(--type-reading);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.markdown > * + * {
+  margin-top: var(--space-stack-md);
+}
+
+.markdown h3 {
+  margin-top: var(--space-section);
+  padding-bottom: var(--space-stack-sm);
+  font: var(--type-section);
+  border-bottom: var(--border-default);
+}
+
+.markdown h4 {
+  margin-top: var(--space-stack-lg);
+  font: var(--type-subtitle);
+  font-weight: var(--abk-font-weight-semibold);
+}
+
+.markdown h5,
+.markdown h6 {
+  margin-top: var(--space-stack-lg);
+  font: var(--type-body-strong);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown h3 + *,
+.markdown h4 + *,
+.markdown h5 + * {
+  margin-top: var(--space-stack-sm);
+}
+
+.markdown ul,
+.markdown ol {
+  display: grid;
+  gap: var(--space-stack-xs);
+  padding-inline-start: var(--abk-space-6);
+}
+
+.markdown li > ul,
+.markdown li > ol {
+  margin-top: var(--space-stack-xs);
+}
+
+.markdown li::marker {
+  color: var(--color-text-muted);
+}
+
+.markdown strong {
+  color: var(--color-text);
+}
+
+.markdown a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.markdown__external {
+  flex-shrink: 0;
+  align-self: center;
+  width: 0.75em;
+  height: 0.75em;
+}
+
+.markdown blockquote {
+  padding: var(--space-stack-sm) var(--space-inline-lg);
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  border-inline-start: 3px solid var(--color-border-strong);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+}
+
+.markdown hr {
+  margin: var(--space-section) 0;
+}
+
+.markdown code {
+  padding: 0 var(--abk-space-1);
+  background: var(--color-surface-subtle);
+  border-radius: 4px;
+}
+
+/* Tablas del texto: compactas, con desplazamiento propio si no entran */
+.markdown__table {
+  max-width: 100%;
+  overflow-x: auto;
+  border: var(--border-default);
+  border-radius: var(--radius-control);
+}
+
+.markdown__table table {
+  font: var(--type-body);
+}
+
+.markdown__table th,
+.markdown__table td {
+  height: auto;
+  padding: var(--abk-space-2) var(--space-inline-md);
+  vertical-align: top;
+  overflow-wrap: normal;
+}
+
+.markdown__table th {
+  white-space: normal;
+}
+
+.markdown__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown__table td a {
+  white-space: nowrap;
+}

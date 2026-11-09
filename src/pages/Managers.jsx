@@ -2,7 +2,9 @@ import { useState } from 'react';
 import ManagerTable from '../components/managers/ManagerTable';
 import ManagerForm from '../components/managers/ManagerForm';
 import Modal from '../components/shared/modal/Modal';
+import { FiPlus } from 'react-icons/fi';
 import Button from '../components/shared/button/Button';
+import PageHeader from '../components/shared/page/PageHeader';
 import { getRole } from '../utils/utils';
 
 const Managers = () => {
@@ -37,11 +39,19 @@ const Managers = () => {
 
   return (
     <div className='page'>
-      <h1>Managers</h1>
-
-      <p>Administrá los managers de tu firma.</p>
-
-      {canCreate && <Button type='primary' label='Agregar nuevo manager' onClick={handleAdd} />}
+      <PageHeader
+        title='Managers'
+        subtitle={
+          canCreate ?
+            'Administrá los managers de tu firma.'
+          : 'Consultá los managers de todas las firmas.'
+        }
+        actions={
+          canCreate && (
+            <Button type='primary' icon={FiPlus} label='Agregar manager' onClick={handleAdd} />
+          )
+        }
+      />
 
       <ManagerTable key={tableKey} onEdit={handleEdit} />
 

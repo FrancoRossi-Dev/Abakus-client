@@ -2,7 +2,9 @@ import { useState } from 'react';
 import InstrumentTable from '../../components/instruments/InstrumentTable';
 import InstrumentForm from '../../components/instruments/InstrumentForm';
 import Modal from '../../components/shared/modal/Modal';
+import { FiPlus } from 'react-icons/fi';
 import Button from '../../components/shared/button/Button';
+import PageHeader from '../../components/shared/page/PageHeader';
 
 const Instruments = () => {
   const [showForm, setShowForm] = useState(false);
@@ -34,11 +36,11 @@ const Instruments = () => {
 
   return (
     <div className='page'>
-      <h1>Instrumentos</h1>
-
-      <p>Administrá el catálogo de instrumentos. Para agregar uno nuevo alcanza con su ISIN.</p>
-
-      <Button type='primary' label='Agregar nuevo instrumento' onClick={handleAdd} />
+      <PageHeader
+        title='Instrumentos'
+        subtitle='Administrá el catálogo de instrumentos. Para agregar uno nuevo alcanza con su ISIN.'
+        actions={<Button type='primary' icon={FiPlus} label='Agregar instrumento' onClick={handleAdd} />}
+      />
 
       <InstrumentTable key={tableKey} onEdit={handleEdit} />
 

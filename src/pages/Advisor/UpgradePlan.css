@@ -43,7 +43,7 @@
 }
 
 .upgrade-plan__bar-fill--full {
-  background: var(--color-danger, #b42318);
+  background: var(--color-error);
 }
 
 .upgrade-plan__table {

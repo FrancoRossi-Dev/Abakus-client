@@ -79,90 +79,10 @@
   padding: 0;
 }
 
-/* --- Búsqueda --- */
-.search-field {
-  position: relative;
-  flex: 1 1 18rem;
-  max-width: 26rem;
-}
-
-.search-field__icon {
-  position: absolute;
-  inset-inline-start: var(--space-control-x);
-  top: 50%;
-  translate: 0 -50%;
-  color: var(--color-text-muted);
-  pointer-events: none;
-}
-
-.search-field input {
-  padding-inline: calc(var(--space-control-x) + 1.5rem) var(--size-control-height);
-}
-
-.search-field input:hover {
-  border-color: var(--color-border-strong);
-}
-
-/* Se usa el botón propio para limpiar, que es accesible por teclado */
-.search-field input::-webkit-search-cancel-button {
-  appearance: none;
-}
-
-.search-field__clear {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--size-control-height);
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-}
-
-.search-field__clear:hover {
-  color: var(--color-text);
-}
-
-.search-field__clear:focus-visible {
-  outline-offset: -2px;
-}
-
-/* --- Estados vacío / sin resultados (spec §7, §8.7) --- */
-.empty-state {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-stack-sm);
-  padding: var(--abk-space-16) var(--space-card-padding);
-  text-align: center;
-}
-
-.empty-state--compact {
-  padding-block: var(--abk-space-10);
-}
-
-.empty-state__title {
-  font: var(--type-subtitle);
-  color: var(--color-text);
-}
-
-.empty-state__text {
-  max-width: 36ch;
-  color: var(--color-text-muted);
-}
-
-.empty-state .button {
-  margin-top: var(--space-stack-sm);
-}
+/* Búsqueda y estados vacíos: patrones compartidos en styles/patterns.css */
 
 @media (max-width: 48rem) {
   .client-table__toolbar {
     padding-inline: var(--space-card-padding-tight);
-  }
-
-  .search-field {
-    max-width: none;
   }
 }

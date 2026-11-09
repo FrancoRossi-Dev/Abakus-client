@@ -3,6 +3,10 @@ import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
+import FormField from "../shared/form/FormField";
+import "../clients/ClientForm.css";
+import FormAlert from "../shared/form/FormAlert";
+import Button from "../shared/button/Button";
 import {
   PLAN_TIERS,
   createAdvisorFormSchema,
@@ -12,15 +16,15 @@ import { updateAdvisor, invalidateAdvisors } from "../../features/advisors/advis
 
 const PLAN_LABELS = { base: "Base", premium: "Premium" };
 
-// Campos de details: [nombre, etiqueta, tipo de input]
+// Campos de details: [nombre, etiqueta, tipo de input, opcional]
 const DETAIL_FIELDS = [
-  ["comercialName", "Nombre comercial", "text"],
-  ["legalName", "Razón social", "text"],
-  ["document", "Documento", "text"],
-  ["phone", "Teléfono", "tel"],
-  ["contactEmail", "Correo de contacto", "email"],
-  ["address", "Dirección (opcional)", "text"],
-  ["country", "País (opcional)", "text"],
+  ["comercialName", "Nombre comercial", "text", false],
+  ["legalName", "Razón social", "text", false],
+  ["document", "Documento", "text", false],
+  ["phone", "Teléfono", "tel", false],
+  ["contactEmail", "Correo de contacto", "email", false],
+  ["address", "Dirección", "text", true],
+  ["country", "País", "text", true],
 ];
 
 const toFormValues = (advisor) => ({
@@ -85,63 +89,76 @@ const AdvisorForm = ({ advisor, onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleSave)} noValidate>
-      <label htmlFor={fieldId("username")}>Usuario:</label>
-      <input
-        id={fieldId("username")}
-        type="text"
-        autoFocus
-        autoComplete="off"
-        disabled={isSubmitting}
-        {...register("username")}
-      />
-      {errors.username && <p role="alert">{errors.username.message}</p>}
-
-      <label htmlFor={fieldId("password")}>
-        {isEditing ? "Nueva contraseña (vacío para no cambiarla):" : "Contraseña:"}
-      </label>
-      <input
-        id={fieldId("password")}
-        type="password"
-        autoComplete="new-password"
-        disabled={isSubmitting}
-        {...register("password")}
-      />
-      {errors.password && <p role="alert">{errors.password.message}</p>}
-
-      {DETAIL_FIELDS.map(([name, label, type]) => (
-        <div key={name}>
-          <label htmlFor={fieldId(name)}>{label}:</label>
-          <input
-            id={fieldId(name)}
-            type={type}
+    <form className="form" onSubmit={handleSubmit(handleSave)} noValidate>
+      <fieldset className="client-form__section">
+        <legend className="client-form__legend">Acceso</legend>
+        <div className="form__grid">
+          <FormField
+            id={fieldId("username")}
+            label="Usuario"
+            autoFocus
+            autoComplete="off"
             disabled={isSubmitting}
-            {...register(`details.${name}`)}
+            error={errors.username?.message}
+            {...register("username")}
           />
-          {errors.details?.[name] && <p role="alert">{errors.details[name].message}</p>}
+          <FormField
+            id={fieldId("password")}
+            label={isEditing ? "Nueva contraseña" : "Contraseña"}
+            type="password"
+            optional={isEditing}
+            hint={isEditing ? "Dejala vacía para no cambiarla." : undefined}
+            autoComplete="new-password"
+            disabled={isSubmitting}
+            error={errors.password?.message}
+            {...register("password")}
+          />
+          <FormField
+            id={fieldId("planTier")}
+            as="select"
+            label="Plan"
+            disabled={isSubmitting}
+            error={errors.planTier?.message}
+            {...register("planTier")}
+          >
+            {PLAN_TIERS.map((tier) => (
+              <option key={tier} value={tier}>
+                {PLAN_LABELS[tier]}
+              </option>
+            ))}
+          </FormField>
         </div>
-      ))}
+      </fieldset>
 
-      <label htmlFor={fieldId("planTier")}>Plan:</label>
-      <select id={fieldId("planTier")} disabled={isSubmitting} {...register("planTier")}>
-        {PLAN_TIERS.map((tier) => (
-          <option key={tier} value={tier}>
-            {PLAN_LABELS[tier]}
-          </option>
-        ))}
-      </select>
-      {errors.planTier && <p role="alert">{errors.planTier.message}</p>}
+      <fieldset className="client-form__section">
+        <legend className="client-form__legend">Datos de la firma</legend>
+        <div className="form__grid">
+          {DETAIL_FIELDS.map(([name, label, type, optional]) => (
+            <FormField
+              key={name}
+              id={fieldId(name)}
+              label={label}
+              type={type}
+              optional={optional}
+              disabled={isSubmitting}
+              error={errors.details?.[name]?.message}
+              {...register(`details.${name}`)}
+            />
+          ))}
+        </div>
+      </fieldset>
 
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
       <div className="modal__actions">
-        <button type="button" onClick={onCancel} disabled={isSubmitting}>
-          Cancelar
-        </button>
-
-        <button type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting ? "Guardando..." : "Guardar"}
-        </button>
+        <Button type="secondary" label="Cancelar" onClick={onCancel} disabled={isSubmitting} />
+        <Button
+          type="primary"
+          htmlType="submit"
+          label={isSubmitting ? "Guardando..." : "Guardar"}
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting}
+        />
       </div>
     </form>
   );

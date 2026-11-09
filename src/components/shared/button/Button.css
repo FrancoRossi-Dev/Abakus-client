@@ -58,3 +58,20 @@
 .button--tertiary:disabled {
   background: transparent;
 }
+
+/* Un enlace con apariencia de botón (navegación): replica la base de <button> de App.css */
+a.button {
+  min-height: var(--size-control-height);
+  padding: 0 var(--space-control-x);
+  border-radius: var(--radius-control);
+  text-decoration: none;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast);
+}
+
+a.button--primary:hover {
+  color: var(--color-action-primary-text);
+  background: var(--color-action-primary-hover);
+}

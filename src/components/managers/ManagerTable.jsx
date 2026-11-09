@@ -73,19 +73,17 @@ const ManagerTable = ({ onEdit }) => {
   };
 
   return (
-    <div>
-      {error && <p role='alert'>{error}</p>}
-
-      <PaginatedTable
-        endpoint='/manager'
-        selectState={selectManagers}
-        actions={managersActions}
-        pageSize={15}
-        columns={columns}
-        itemLabel='managers'
-        renderActions={renderActions}
-      />
-    </div>
+    <PaginatedTable
+      title='Listado de managers'
+      actionError={error}
+      endpoint='/manager'
+      selectState={selectManagers}
+      actions={managersActions}
+      pageSize={15}
+      columns={columns}
+      itemLabel='managers'
+      renderActions={renderActions}
+    />
   );
 };
 

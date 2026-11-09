@@ -62,19 +62,17 @@ const BankTable = ({ onEdit }) => {
   };
 
   return (
-    <div>
-      {error && <p role='alert'>{error}</p>}
-
-      <PaginatedTable
-        endpoint='/bank'
-        selectState={selectBanks}
-        actions={banksActions}
-        pageSize={15}
-        columns={columns}
-        itemLabel='bancos'
-        renderActions={renderActions}
-      />
-    </div>
+    <PaginatedTable
+      title='Catálogo de bancos'
+      actionError={error}
+      endpoint='/bank'
+      selectState={selectBanks}
+      actions={banksActions}
+      pageSize={15}
+      columns={columns}
+      itemLabel='bancos'
+      renderActions={renderActions}
+    />
   );
 };
 

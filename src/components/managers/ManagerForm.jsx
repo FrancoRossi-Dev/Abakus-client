@@ -3,6 +3,9 @@ import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
+import FormField from "../shared/form/FormField";
+import FormAlert from "../shared/form/FormAlert";
+import Button from "../shared/button/Button";
 import { createManagerSchema  } from "../../validators/manager.validators";
 import {
   updateManager,
@@ -37,8 +40,6 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
       fullName: manager?.fullName || "",
       email: manager?.email || "",
     });
-
-    setError("");
   }, [manager, reset]);
 
   const handleSave = async (data) => {
@@ -74,51 +75,38 @@ const ManagerForm = ({ manager, onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleSave)} noValidate>
-      <label htmlFor={nameId}>Nombre completo:</label>
-
-      <input
+    <form className="form" onSubmit={handleSubmit(handleSave)} noValidate>
+      <FormField
         id={nameId}
-        type="text"
+        label="Nombre completo"
         autoFocus
+        autoComplete="off"
         disabled={isSubmitting}
+        error={errors.fullName?.message}
         {...register("fullName")}
       />
 
-      {errors.fullName && (
-        <p role="alert">{errors.fullName.message}</p>
-      )}
-
-      <label htmlFor={emailId}>Correo:</label>
-
-      <input
+      <FormField
         id={emailId}
+        label="Correo"
         type="email"
+        autoComplete="off"
         disabled={isSubmitting}
+        error={errors.email?.message}
         {...register("email")}
       />
 
-      {errors.email && (
-        <p role="alert">{errors.email.message}</p>
-      )}
-
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
       <div className="modal__actions">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          Cancelar
-        </button>
-
-        <button
-          type="submit"
+        <Button type="secondary" label="Cancelar" onClick={onCancel} disabled={isSubmitting} />
+        <Button
+          type="primary"
+          htmlType="submit"
+          label={isSubmitting ? "Guardando..." : "Guardar"}
           disabled={!isValid || isSubmitting}
-        >
-          {isSubmitting ? "Guardando..." : "Guardar"}
-        </button>
+          aria-busy={isSubmitting}
+        />
       </div>
     </form>
   );

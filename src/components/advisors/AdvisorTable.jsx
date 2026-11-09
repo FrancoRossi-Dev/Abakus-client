@@ -92,19 +92,17 @@ const AdvisorTable = ({ onEdit }) => {
   };
 
   return (
-    <div>
-      {error && <p role='alert'>{error}</p>}
-
-      <PaginatedTable
-        endpoint='/user/advisors'
-        selectState={selectAdvisors}
-        actions={advisorsActions}
-        pageSize={15}
-        columns={columns}
-        itemLabel='advisors'
-        renderActions={renderActions}
-      />
-    </div>
+    <PaginatedTable
+      title='Advisors registrados'
+      actionError={error}
+      endpoint='/user/advisors'
+      selectState={selectAdvisors}
+      actions={advisorsActions}
+      pageSize={15}
+      columns={columns}
+      itemLabel='advisors'
+      renderActions={renderActions}
+    />
   );
 };
 

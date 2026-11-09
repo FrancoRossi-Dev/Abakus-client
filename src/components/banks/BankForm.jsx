@@ -3,6 +3,9 @@ import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
+import FormField from "../shared/form/FormField";
+import FormAlert from "../shared/form/FormAlert";
+import Button from "../shared/button/Button";
 import { createBankSchema } from "../../validators/bank.validators";
 import { updateBank, invalidateBanks } from "../../features/banks/banks.slice";
 
@@ -62,29 +65,44 @@ const BankForm = ({ bank, onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleSave)} noValidate>
-      <label htmlFor={nameId}>Nombre:</label>
-      <input id={nameId} type="text" autoFocus disabled={isSubmitting} {...register("name")} />
-      {errors.name && <p role="alert">{errors.name.message}</p>}
+    <form className="form" onSubmit={handleSubmit(handleSave)} noValidate>
+      <FormField
+        id={nameId}
+        label="Nombre"
+        autoFocus
+        disabled={isSubmitting}
+        error={errors.name?.message}
+        {...register("name")}
+      />
 
-      <label htmlFor={countryId}>País:</label>
-      <input id={countryId} type="text" disabled={isSubmitting} {...register("country")} />
-      {errors.country && <p role="alert">{errors.country.message}</p>}
+      <div className="form__grid">
+        <FormField
+          id={countryId}
+          label="País"
+          disabled={isSubmitting}
+          error={errors.country?.message}
+          {...register("country")}
+        />
+        <FormField
+          id={regionId}
+          label="Región"
+          disabled={isSubmitting}
+          error={errors.region?.message}
+          {...register("region")}
+        />
+      </div>
 
-      <label htmlFor={regionId}>Región:</label>
-      <input id={regionId} type="text" disabled={isSubmitting} {...register("region")} />
-      {errors.region && <p role="alert">{errors.region.message}</p>}
-
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
       <div className="modal__actions">
-        <button type="button" onClick={onCancel} disabled={isSubmitting}>
-          Cancelar
-        </button>
-
-        <button type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting ? "Guardando..." : "Guardar"}
-        </button>
+        <Button type="secondary" label="Cancelar" onClick={onCancel} disabled={isSubmitting} />
+        <Button
+          type="primary"
+          htmlType="submit"
+          label={isSubmitting ? "Guardando..." : "Guardar"}
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting}
+        />
       </div>
     </form>
   );

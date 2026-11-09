@@ -1,53 +1,97 @@
-import { useSelector } from "react-redux";
-import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import { Pie } from "react-chartjs-2";
+import { useSelector } from 'react-redux';
+import { ArcElement, Chart as ChartJS, Tooltip } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+import { formatAmount, formatPercent, formatUSD } from '../../utils/format';
+import { buildAllocationSlices } from './allocation';
+import './AssetAllocation.css';
 
-ChartJS.register(ArcElement, Legend, Tooltip);
-
-const options = {
-  responsive: true,
-  plugins: {
-    legend: { position: "top" },
-  },
-};
+ChartJS.register(ArcElement, Tooltip);
 
 const AssetAllocationChart = ({ clientId }) => {
-  const { clientId: reportClientId, byInstrumentType } = useSelector(
-    (state) => state.reports
-  );
+  const { clientId: reportClientId, byInstrumentType } = useSelector((state) => state.reports);
 
   if (reportClientId !== clientId) return null;
 
-  const totals = { stock: 0, bond: 0, fund: 0, other: 0 };
+  // Solo las categorías con valor: una porción vacía no aporta y ensucia la leyenda
+  const slices = buildAllocationSlices(byInstrumentType);
 
-  for (const item of byInstrumentType) {
-    const type = ["stock", "bond", "fund"].includes(item.type)
-      ? item.type
-      : "other";
-
-    totals[type] += item.marketValue;
-  }
-
-  const values = [totals.stock, totals.bond, totals.fund, totals.other];
-
-  if (values.every((value) => value === 0)) {
-    return <p>Sin valor de mercado para graficar.</p>;
+  if (slices.length === 0) {
+    return <p className='allocation__empty'>No hay valor de mercado para graficar.</p>;
   }
 
   const data = {
-    labels: ["Equities", "Bonds", "Funds", "Other"],
+    labels: slices.map((slice) => slice.label),
     datasets: [
       {
-        label: "Market value",
-        data: values,
-        backgroundColor: ["#2563eb", "#0f766e", "#d97706", "#7c3aed"],
+        data: slices.map((slice) => slice.value),
+        backgroundColor: slices.map((slice) => slice.color),
+        // separación de 2 px del color de la superficie entre porciones
+        borderColor: '#ffffff',
+        borderWidth: 2,
+        hoverOffset: 4,
       },
     ],
   };
 
+  const options = {
+    responsive: true,
+    maintainAspectRatio: true,
+    cutout: '62%',
+    plugins: {
+      // la leyenda es la tabla de al lado: nombres, importes y porcentajes legibles
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) =>
+            ` ${formatUSD(context.parsed)} (${formatPercent(slices[context.dataIndex].percentage)})`,
+        },
+      },
+    },
+  };
+
   return (
-    <div className="reports__chart">
-      <Pie data={data} options={options} />
+    <div className='allocation'>
+      <div className='allocation__chart'>
+        <Doughnut
+          data={data}
+          options={options}
+          role='img'
+          aria-label={`Composición por tipo de activo: ${slices
+            .map((slice) => `${slice.label} ${formatPercent(slice.percentage)}`)
+            .join(', ')}`}
+        />
+      </div>
+
+      <table className='allocation__legend'>
+        <caption className='sr-only'>Composición por tipo de activo</caption>
+        <thead>
+          <tr>
+            <th scope='col'>Tipo</th>
+            <th scope='col' data-align='end'>
+              USD
+            </th>
+            <th scope='col' data-align='end'>
+              %
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {slices.map((slice) => (
+            <tr key={slice.type}>
+              <th scope='row'>
+                <span
+                  className='allocation__swatch'
+                  style={{ background: slice.color }}
+                  aria-hidden='true'
+                />
+                {slice.label}
+              </th>
+              <td data-align='end'>{formatAmount(slice.value)}</td>
+              <td data-align='end'>{formatPercent(slice.percentage)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

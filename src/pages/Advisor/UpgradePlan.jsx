@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import backend from '../../api/backend';
-import '../../components/shared/button/Button.css';
+import { FiStar } from 'react-icons/fi';
+import Button from '../../components/shared/button/Button';
+import PageHeader from '../../components/shared/page/PageHeader';
+import LoadingState from '../../components/shared/page/LoadingState';
+import ErrorState from '../../components/shared/page/ErrorState';
 import './UpgradePlan.css';
 
 const PLAN_NAMES = { base: 'Base', premium: 'Premium' };
@@ -75,6 +79,12 @@ const UpgradePlan = () => {
     };
   }, []);
 
+  const handleRetry = () => {
+    setLoading(true);
+    setError('');
+    fetchPlan();
+  };
+
   const upgradePlan = async () => {
     setUpgrading(true);
     try {
@@ -89,8 +99,20 @@ const UpgradePlan = () => {
     }
   };
 
-  if (loading) return <div className='page'><p>Cargando plan...</p></div>;
-  if (error) return <div className='page'><p role='alert'>{error}</p></div>;
+  if (loading) {
+    return (
+      <div className='page'>
+        <LoadingState label='Cargando tu plan...' />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className='page'>
+        <ErrorState message={error} onRetry={handleRetry} />
+      </div>
+    );
+  }
 
   const isPremium = plan.planTier === 'premium';
   // si ya es premium la API manda limit null; para la tabla se muestra el límite base por defecto
@@ -99,7 +121,10 @@ const UpgradePlan = () => {
 
   return (
     <div className='page upgrade-plan'>
-      <h1>Mi plan: {PLAN_NAMES[plan.planTier] ?? plan.planTier}</h1>
+      <PageHeader
+        title={`Mi plan: ${PLAN_NAMES[plan.planTier] ?? plan.planTier}`}
+        subtitle='Revisá cuánto usás de tu plan y compará lo que incluye cada uno.'
+      />
 
       <section className='upgrade-plan__card'>
         <h2>Uso actual</h2>
@@ -136,13 +161,14 @@ const UpgradePlan = () => {
       {isPremium ? (
         <p className='upgrade-plan__done'>Ya tenés el plan Premium: no hay límites en tu cuenta.</p>
       ) : (
-        <button
-          type='button'
-          className='button button--primary'
+        <Button
+          type='primary'
+          icon={FiStar}
+          label={upgrading ? 'Actualizando...' : 'Actualizar a plan Premium'}
           onClick={upgradePlan}
-          disabled={upgrading}>
-          {upgrading ? 'Actualizando...' : 'Actualizar a plan premium'}
-        </button>
+          disabled={upgrading}
+          aria-busy={upgrading}
+        />
       )}
     </div>
   );

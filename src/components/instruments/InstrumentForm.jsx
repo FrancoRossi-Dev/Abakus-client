@@ -3,11 +3,14 @@ import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
+import FormField from "../shared/form/FormField";
+import FormAlert from "../shared/form/FormAlert";
+import Button from "../shared/button/Button";
 import {
   createInstrumentSchema,
   editInstrumentFormSchema,
 } from "../../validators/instrument.validators";
-import { INSTRUMENT_TYPES } from "../../constants/constants";
+import { INSTRUMENT_TYPES, INSTRUMENT_TYPE_LABELS } from "../../constants/constants";
 import {
   updateInstrument,
   invalidateInstruments,
@@ -82,52 +85,68 @@ const InstrumentForm = ({ instrument, onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleSave)} noValidate>
+    <form className="form" onSubmit={handleSubmit(handleSave)} noValidate>
       {isEditing ? (
         <>
-          <label htmlFor={nameId}>Nombre:</label>
-          <input id={nameId} type="text" autoFocus disabled={isSubmitting} {...register("name")} />
-          {errors.name && <p role="alert">{errors.name.message}</p>}
+          <FormField
+            id={nameId}
+            label="Nombre"
+            autoFocus
+            disabled={isSubmitting}
+            error={errors.name?.message}
+            {...register("name")}
+          />
 
-          <label htmlFor={typeId}>Tipo:</label>
-          <select id={typeId} disabled={isSubmitting} {...register("type")}>
-            {INSTRUMENT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          {errors.type && <p role="alert">{errors.type.message}</p>}
+          <div className="form__grid">
+            <FormField
+              id={typeId}
+              as="select"
+              label="Tipo"
+              disabled={isSubmitting}
+              error={errors.type?.message}
+              {...register("type")}
+            >
+              {INSTRUMENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {INSTRUMENT_TYPE_LABELS[type] ?? type}
+                </option>
+              ))}
+            </FormField>
 
-          <label htmlFor={tickerId}>Ticker (opcional):</label>
-          <input id={tickerId} type="text" disabled={isSubmitting} {...register("ticker")} />
-          {errors.ticker && <p role="alert">{errors.ticker.message}</p>}
+            <FormField
+              id={tickerId}
+              label="Ticker"
+              optional
+              disabled={isSubmitting}
+              error={errors.ticker?.message}
+              {...register("ticker")}
+            />
+          </div>
         </>
       ) : (
-        <>
-          <label htmlFor={isinId}>ISIN:</label>
-          <input
-            id={isinId}
-            type="text"
-            autoFocus
-            placeholder="US0378331005"
-            disabled={isSubmitting}
-            {...register("isin")}
-          />
-          {errors.isin && <p role="alert">{errors.isin.message}</p>}
-        </>
+        <FormField
+          id={isinId}
+          label="ISIN"
+          autoFocus
+          placeholder="US0378331005"
+          hint="12 caracteres. El nombre, el tipo y el ticker se completan automáticamente."
+          disabled={isSubmitting}
+          error={errors.isin?.message}
+          {...register("isin")}
+        />
       )}
 
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
       <div className="modal__actions">
-        <button type="button" onClick={onCancel} disabled={isSubmitting}>
-          Cancelar
-        </button>
-
-        <button type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting ? "Guardando..." : "Guardar"}
-        </button>
+        <Button type="secondary" label="Cancelar" onClick={onCancel} disabled={isSubmitting} />
+        <Button
+          type="primary"
+          htmlType="submit"
+          label={isSubmitting ? "Guardando..." : "Guardar"}
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting}
+        />
       </div>
     </form>
   );

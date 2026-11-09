@@ -3,6 +3,9 @@ import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
+import FormField from "../shared/form/FormField";
+import FormAlert from "../shared/form/FormAlert";
+import Button from "../shared/button/Button";
 import { createIssuerSchema } from "../../validators/issuer.validators";
 import { updateIssuer, invalidateIssuers } from "../../features/issuers/issuers.slice";
 
@@ -65,39 +68,52 @@ const IssuerForm = ({ issuer, onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleSave)} noValidate>
-      <label htmlFor={commercialNameId}>Nombre comercial:</label>
-      <input
-        id={commercialNameId}
-        type="text"
-        autoFocus
-        disabled={isSubmitting}
-        {...register("commercialName")}
-      />
-      {errors.commercialName && <p role="alert">{errors.commercialName.message}</p>}
+    <form className="form" onSubmit={handleSubmit(handleSave)} noValidate>
+      <div className="form__grid">
+        <FormField
+          id={commercialNameId}
+          label="Nombre comercial"
+          autoFocus
+          disabled={isSubmitting}
+          error={errors.commercialName?.message}
+          {...register("commercialName")}
+        />
+        <FormField
+          id={legalNameId}
+          label="Razón social"
+          disabled={isSubmitting}
+          error={errors.legalName?.message}
+          {...register("legalName")}
+        />
+        <FormField
+          id={addressId}
+          label="Dirección"
+          optional
+          disabled={isSubmitting}
+          error={errors.address?.message}
+          {...register("address")}
+        />
+        <FormField
+          id={countryId}
+          label="País"
+          optional
+          disabled={isSubmitting}
+          error={errors.country?.message}
+          {...register("country")}
+        />
+      </div>
 
-      <label htmlFor={legalNameId}>Razón social:</label>
-      <input id={legalNameId} type="text" disabled={isSubmitting} {...register("legalName")} />
-      {errors.legalName && <p role="alert">{errors.legalName.message}</p>}
-
-      <label htmlFor={addressId}>Dirección (opcional):</label>
-      <input id={addressId} type="text" disabled={isSubmitting} {...register("address")} />
-      {errors.address && <p role="alert">{errors.address.message}</p>}
-
-      <label htmlFor={countryId}>País (opcional):</label>
-      <input id={countryId} type="text" disabled={isSubmitting} {...register("country")} />
-      {errors.country && <p role="alert">{errors.country.message}</p>}
-
-      {error && <p role="alert">{error}</p>}
+      <FormAlert>{error}</FormAlert>
 
       <div className="modal__actions">
-        <button type="button" onClick={onCancel} disabled={isSubmitting}>
-          Cancelar
-        </button>
-
-        <button type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting ? "Guardando..." : "Guardar"}
-        </button>
+        <Button type="secondary" label="Cancelar" onClick={onCancel} disabled={isSubmitting} />
+        <Button
+          type="primary"
+          htmlType="submit"
+          label={isSubmitting ? "Guardando..." : "Guardar"}
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting}
+        />
       </div>
     </form>
   );

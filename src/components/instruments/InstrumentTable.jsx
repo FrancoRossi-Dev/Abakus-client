@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import backend from '../../api/backend';
+import { INSTRUMENT_TYPE_LABELS } from '../../constants/constants';
 import PaginatedTable from '../shared/table/PaginatedTable';
 import EditButton from '../shared/button/EditButton';
 import DeleteButton from '../shared/button/DeleteButton';
@@ -12,7 +13,11 @@ import {
 
 const columns = [
   { key: 'name', header: 'Nombre' },
-  { key: 'type', header: 'Tipo' },
+  {
+    key: 'type',
+    header: 'Tipo',
+    render: (instrument) => INSTRUMENT_TYPE_LABELS[instrument.type] ?? instrument.type ?? '—',
+  },
   { key: 'ticker', header: 'Ticker', render: (instrument) => instrument.ticker || '—' },
   { key: 'isin', header: 'ISIN', render: (instrument) => instrument.isin || '—' },
   { key: 'exchCode', header: 'Mercado', render: (instrument) => instrument.exchCode || '—' },
@@ -63,19 +68,17 @@ const InstrumentTable = ({ onEdit }) => {
   };
 
   return (
-    <div>
-      {error && <p role='alert'>{error}</p>}
-
-      <PaginatedTable
-        endpoint='/instrument'
-        selectState={selectInstruments}
-        actions={instrumentsActions}
-        pageSize={15}
-        columns={columns}
-        itemLabel='instrumentos'
-        renderActions={renderActions}
-      />
-    </div>
+    <PaginatedTable
+      title='Catálogo de instrumentos'
+      actionError={error}
+      endpoint='/instrument'
+      selectState={selectInstruments}
+      actions={instrumentsActions}
+      pageSize={15}
+      columns={columns}
+      itemLabel='instrumentos'
+      renderActions={renderActions}
+    />
   );
 };
 
