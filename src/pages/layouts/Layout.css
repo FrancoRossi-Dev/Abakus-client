@@ -64,8 +64,8 @@
   background: var(--color-surface-selected);
   color: var(--color-logo-primary);
   font-weight: var(--abk-font-weight-semibold);
-  box-shadow: inset 3px 0 0 var(--color-action-primary);
 }
+
 
 .sidebar__nav a.active .sidebar__icon {
   color: var(--color-action-primary);
@@ -78,16 +78,20 @@
   border-top: var(--border-default);
 }
 
-.sidebar__role {
-  padding-inline: var(--space-control-x);
-  font: var(--type-meta);
-  color: var(--color-text-muted);
-}
-
 .sidebar__logout {
   border: none;
   background: transparent;
   font: var(--type-body);
+}
+
+/* Salir es una acción destructiva de la sesión: el hover la anticipa con el color de error */
+.sidebar__logout:hover,
+.sidebar__logout:hover .sidebar__icon {
+  color: var(--color-error);
+}
+
+.sidebar__logout:hover {
+  background: var(--color-error-surface);
 }
 
 .layout__main {
@@ -96,6 +100,14 @@
   overflow-y: auto;
   padding: var(--space-section) var(--space-page-gutter);
   background: var(--color-surface);
+}
+
+/* Barra superior del área principal: controles globales (tema) en la esquina superior derecha */
+.layout__topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: calc(-1 * var(--space-stack-md));
+  margin-bottom: var(--space-stack-sm);
 }
 
 /* Contenedor de cada página dentro del main: apila secciones con el espaciado del sistema */
@@ -201,9 +213,5 @@
   .sidebar__footer {
     padding-top: 0;
     border-top: none;
-  }
-
-  .sidebar__role {
-    display: none;
   }
 }

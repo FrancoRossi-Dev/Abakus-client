@@ -51,7 +51,9 @@ const ClientForm = ({ client, managers, banks, onSuccess, onCancel }) => {
 
   // Al guardar, la página pasa el cliente actualizado: se toma como nuevo punto de partida
   useEffect(() => {
-    if (client) reset(toFormValues(client));
+    // keepDirtyValues: si el cliente cambia por otra acción (ej. subir su imagen),
+    // no se pierde lo que el usuario estaba editando
+    if (client) reset(toFormValues(client), { keepDirtyValues: true });
   }, [client, reset]);
 
   // Lista dinámica de cuentas bancarias (solo en el alta)

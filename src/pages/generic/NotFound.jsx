@@ -1,9 +1,11 @@
 import { Link } from 'react-router';
 import Logo from '../../components/brand/Logo';
+import ThemeToggle from '../../components/shared/theme/ThemeToggle';
 import '../../components/shared/button/Button.css';
 
 const NotFound = () => (
   <main className='standalone'>
+      <ThemeToggle className='theme-toggle--floating' />
     <div className='standalone__card'>
       <Logo />
       <div className='standalone__text'>

@@ -34,7 +34,22 @@ export const styles = StyleSheet.create({
   docType: { fontSize: 9, color: COLORS.muted, marginLeft: 'auto' },
   title: { fontFamily: 'Helvetica-Bold', fontSize: 20, lineHeight: 1.25, color: COLORS.text },
   subtitle: { marginTop: 2, color: COLORS.muted },
-  header: { paddingBottom: 14, marginBottom: 18, borderBottom: `1 solid ${COLORS.border}` },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingBottom: 14,
+    marginBottom: 18,
+    borderBottom: `1 solid ${COLORS.border}`,
+  },
+  headerText: { flex: 1 },
+  clientLogo: {
+    width: 48,
+    height: 48,
+    objectFit: 'contain',
+    border: `1 solid ${COLORS.border}`,
+    borderRadius: 6,
+  },
 
   // --- Secciones ---
   section: { marginBottom: 20 },

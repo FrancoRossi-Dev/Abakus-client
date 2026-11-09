@@ -8,7 +8,7 @@ export const ALLOCATION_CATEGORIES = [
   { type: 'stock', color: '#2f73b0' },
   { type: 'bond', color: '#1fa284' },
   { type: 'fund', color: '#a06ad0' },
-  { type: 'cash', color: '#d9822b' },
+  { type: 'cash', color: '#c8771f' },
   { type: 'other', color: '#808d9a' },
 ];
 

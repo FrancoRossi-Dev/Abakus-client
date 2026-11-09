@@ -8,6 +8,8 @@ import backend from '../../api/backend';
 import ClientForm from '../../components/clients/ClientForm';
 import BankAccountForm from '../../components/clients/BankAccountForm';
 import { toAccountPayload } from '../../components/clients/bankAccounts';
+import ClientAvatar from '../../components/clients/ClientAvatar';
+import ClientLogoUpload from '../../components/clients/ClientLogoUpload';
 import DataTable from '../../components/shared/table/DataTable';
 import Modal from '../../components/shared/modal/Modal';
 import Button from '../../components/shared/button/Button';
@@ -123,12 +125,23 @@ const ClientDetail = () => {
       </Link>
 
       <header className='page-header'>
-        <div className='page-header__text'>
-          <h1>{client?.clientDetails.commercialName || 'Cliente'}</h1>
-          <p className='page-header__subtitle'>
-            Modificá los datos del cliente y gestioná sus cuentas bancarias.
-          </p>
+        <div className='client-identity'>
+          {client && (
+            <ClientAvatar
+              name={client.clientDetails.commercialName}
+              src={client.clientDetails.logoURL}
+              size='lg'
+            />
+          )}
+          <div className='page-header__text'>
+            <h1>{client?.clientDetails.commercialName || 'Cliente'}</h1>
+            <p className='page-header__subtitle'>
+              Modificá los datos del cliente y gestioná sus cuentas bancarias.
+            </p>
+          </div>
         </div>
+
+        {isReady && <ClientLogoUpload client={client} onUploaded={setClient} />}
       </header>
 
       {isLoading && (

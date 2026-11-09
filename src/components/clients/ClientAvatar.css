@@ -1,0 +1,77 @@
+/* Imagen del cliente: cuadrado redondeado (un logo no siempre es una cara, así que no es un círculo) */
+.client-avatar {
+  --_size: 2.5rem;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--_size);
+  height: var(--_size);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-control);
+}
+
+.client-avatar--sm {
+  --_size: 2rem;
+}
+
+.client-avatar--lg {
+  --_size: 4rem;
+  border-radius: var(--radius-card);
+}
+
+/* Los logos se muestran completos, sin recortar */
+.client-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2px;
+}
+
+.client-avatar__initials {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font: var(--type-body-strong);
+  color: var(--color-action-primary);
+  background: var(--color-surface-selected);
+  letter-spacing: 0.02em;
+}
+
+.client-avatar--sm .client-avatar__initials {
+  font: var(--type-meta);
+  font-weight: var(--abk-font-weight-semibold);
+}
+
+.client-avatar--lg .client-avatar__initials {
+  font: var(--type-section);
+}
+
+/* --- Encabezado con identidad: imagen + nombre --- */
+.client-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-lg);
+  min-width: 0;
+}
+
+/* --- Botón de subida (acciones del encabezado del cliente) --- */
+.client-logo__body {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-stack-xs);
+  text-align: end;
+}
+
+.client-logo__hint {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+}
+
+.client-logo__error {
+  font: var(--type-meta);
+  color: var(--color-error);
+}

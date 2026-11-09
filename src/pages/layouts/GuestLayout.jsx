@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router';
 import Logo from '../../components/brand/Logo';
+import ThemeToggle from '../../components/shared/theme/ThemeToggle';
 import { getToken } from '../../utils/utils';
 import './GuestLayout.css';
 
@@ -15,6 +16,7 @@ const GuestLayout = () => {
   return (
     <div className='guest'>
       <main className='guest__main'>
+        <ThemeToggle className='theme-toggle--floating' />
         <Logo className='guest__brand' />
         <Outlet />
       </main>

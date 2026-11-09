@@ -40,7 +40,9 @@
 }
 
 .client-list__item {
-  display: grid;
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-md);
   width: 100%;
   min-height: auto;
   padding: var(--abk-space-2) var(--space-control-x);
@@ -56,7 +58,12 @@
 
 .client-list__item[aria-current='true'] {
   background: var(--color-surface-selected);
-  box-shadow: inset 3px 0 0 var(--color-action-primary);
+}
+
+
+.client-list__text {
+  display: grid;
+  min-width: 0;
 }
 
 .client-list__name {

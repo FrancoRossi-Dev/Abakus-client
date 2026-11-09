@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import "./styles/patterns.css";
 import store from "./store/store";
+import { useTheme } from "./theme/theme";
 
 import AuthWrapper from "./pages/wrappers/AuthWrapper";
 import GuestLayout from "./pages/layouts/GuestLayout";
@@ -30,6 +31,9 @@ import Issuers from "./pages/Admin/Issuers";
 import Instruments from "./pages/Admin/Instruments";
 
 function App() {
+  // los avisos (react-toastify) no usan nuestros tokens: se les pasa el tema activo
+  const theme = useTheme();
+
   return (
     <Provider store={store}>
       <BrowserRouter>
@@ -71,7 +75,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
-      <ToastContainer />
+      <ToastContainer theme={theme} />
     </Provider>
   );
 }

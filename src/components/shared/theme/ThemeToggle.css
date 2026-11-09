@@ -1,0 +1,66 @@
+/* Interruptor sol / luna: pista con borde sutil y un indicador que se desliza al modo activo */
+.theme-toggle {
+  --_icon: 1rem;
+  --_pad: 3px;
+  --_thumb: calc(var(--_icon) + 2 * 5px);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  min-height: 0;
+  min-width: 0;
+  width: calc(2 * var(--_thumb) + 2 * var(--_pad));
+  height: calc(var(--_thumb) + 2 * var(--_pad));
+  padding: var(--_pad);
+  background: var(--color-surface-subtle);
+  border: var(--border-default);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-border-strong);
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: var(--_pad);
+  left: var(--_pad);
+  width: var(--_thumb);
+  height: var(--_thumb);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-raised);
+  border: var(--border-default);
+  transition: translate var(--motion-base);
+}
+
+.theme-toggle[aria-checked='true'] .theme-toggle__thumb {
+  translate: var(--_thumb) 0;
+}
+
+/* Íconos de trazo fino: el del modo activo en tinta principal, el otro apagado */
+/* Cada ícono ocupa el ancho del indicador, así queda centrado debajo de él */
+.theme-toggle__icon {
+  position: relative;
+  flex: none;
+  width: var(--_thumb);
+  height: var(--_icon);
+  padding-inline: calc((var(--_thumb) - var(--_icon)) / 2);
+  stroke-width: 1.75;
+  color: var(--color-text-muted);
+  transition: color var(--motion-fast);
+}
+
+.theme-toggle[aria-checked='false'] .theme-toggle__icon--sun,
+.theme-toggle[aria-checked='true'] .theme-toggle__icon--moon {
+  color: var(--color-text);
+}
+
+/* Variante flotante: esquina superior derecha en pantallas sin layout (login, registro, 404) */
+.theme-toggle--floating {
+  position: fixed;
+  top: var(--space-stack-md);
+  right: var(--space-stack-md);
+  z-index: 10;
+}

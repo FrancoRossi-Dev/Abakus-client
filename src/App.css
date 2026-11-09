@@ -33,6 +33,11 @@
     --abk-green-400: #2cb99a; /* complementario: solo gráfico, no texto (contraste < 4,5:1) */
     --abk-green-50: #ddf5ee; /* superficie suave */
 
+    /* Fijos: iguales en claro y oscuro (superficie de marca con texto blanco) [derivado] */
+    --abk-green-800: #0a6b59; /* blanco encima 6,4:1 */
+    --abk-green-100: #d9ece7; /* texto secundario sobre green-800, 5,3:1 */
+    --abk-white: #ffffff;
+
     /* Neutros — spec §3 */
     --abk-neutral-0: #ffffff;
     --abk-neutral-50: #f3f6f9;
@@ -103,6 +108,54 @@
     --abk-duration-200: 200ms;
     --abk-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   }
+
+  /* ------------------------------------------------------------------------
+     Tema oscuro [derivado] — el spec §14 no lo da por aprobado: pendiente de validación.
+
+     Se redefinen los mismos primitivos; la capa semántica no cambia. Cada primitivo conserva
+     su ROL dentro de la escala, no su luminosidad:
+       neutral-0    superficie principal      neutral-900  tinta más fuerte
+       neutral-50   fondo de la app (más profundo que la superficie, como en claro)
+       blue-800     acción principal          blue-900     su hover (en oscuro, más claro)
+       *-50         superficies de estado (tonos profundos y apagados)
+     Neutros con el matiz del azul profundo #102A48, para que el oscuro siga siendo "azul Abakus".
+     Contrastes verificados (WCAG 2.2 AA): texto ≥ 11:1, texto secundario ≥ 6,7:1, enlaces ≥ 5,8:1,
+     estados sobre su fondo ≥ 6:1, borde de controles 4,4:1 (mín. 3:1).
+     ------------------------------------------------------------------------ */
+  :root[data-theme='dark'] {
+    /* Azules: aclarados para leerse sobre fondo oscuro; mismo matiz que en claro */
+    --abk-blue-900: #c3ddf5; /* hover de la acción principal, trazos del logo */
+    --abk-blue-800: #9cc6ee; /* acción principal (texto oscuro encima, 9,6:1) */
+    --abk-blue-700: #6fb6e6; /* información */
+    --abk-blue-600: #78b0e3; /* enlaces y foco */
+    --abk-blue-50: #16304b; /* superficie de selección */
+
+    /* Verdes: el acento sigue siendo contenido */
+    --abk-green-700: #4cd1ae;
+    --abk-green-400: #2cb99a; /* gráfico: igual que en claro */
+    --abk-green-50: #0e3a32;
+
+    /* Neutros: escala invertida en luminosidad, mismo rol */
+    --abk-neutral-0: #131c27; /* superficie */
+    --abk-neutral-50: #0d141d; /* fondo de la app / superficie sutil */
+    --abk-neutral-100: #1c2835; /* hover */
+    --abk-neutral-200: #263443; /* divisiones */
+    --abk-neutral-400: #64768a; /* texto deshabilitado */
+    --abk-neutral-500: #6f8399; /* borde de controles */
+    --abk-neutral-600: #9db0c3; /* texto secundario */
+    --abk-neutral-900: #e4ebf2; /* texto principal (no blanco puro: menos fatiga) */
+
+    /* Semánticos crudos */
+    --abk-amber-700: #f0b45b;
+    --abk-amber-50: #3a2a12;
+    --abk-red-700: #f28b82;
+    --abk-red-800: #f8aca5;
+    --abk-red-50: #3e1b19;
+
+    /* Sombras: sobre fondo oscuro la elevación necesita más opacidad para notarse */
+    --abk-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --abk-shadow-md: 0 12px 32px rgb(0 0 0 / 0.55);
+  }
 }
 
 /* ==========================================================================
@@ -110,6 +163,11 @@
    ========================================================================== */
 
 @layer semantic {
+  /* Controles nativos, barras de desplazamiento y autocompletado acompañan al tema */
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
   :root {
     color-scheme: light;
 
@@ -153,6 +211,11 @@
     --color-accent: var(--abk-green-700);
     --color-accent-graphic: var(--abk-green-400); /* solo elementos no textuales */
     --color-accent-surface: var(--abk-green-50);
+
+    /* Superficie de marca destacada (bienvenida): verde profundo y texto blanco en ambos temas */
+    --color-surface-brand: var(--abk-green-800);
+    --color-text-on-brand: var(--abk-white);
+    --color-text-on-brand-muted: var(--abk-green-100);
 
     /* --- Marca: logo — planilla "Abakus Brand Identity Board" con paleta del spec §3 --- */
     --color-logo-primary: var(--abk-blue-900);

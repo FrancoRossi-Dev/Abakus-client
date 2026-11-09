@@ -13,6 +13,7 @@ import {
 } from "react-icons/fi";
 import { MdOutlineAccountBalance } from "react-icons/md";
 import Logo from "../../components/brand/Logo";
+import ThemeToggle from "../../components/shared/theme/ThemeToggle";
 import { clearManagers } from "../../features/managers/managers.slice";
 import { clearBanks } from "../../features/banks/banks.slice";
 import { clearIssuers } from "../../features/issuers/issuers.slice";
@@ -80,7 +81,6 @@ const Layout = () => {
         </nav>
 
         <div className="sidebar__footer">
-          {role && <p className="sidebar__role">{role === "admin" ? "Administrador" : "Advisor"}</p>}
           <button type="button" className="sidebar__logout" onClick={handleLogout}>
             <FiLogOut aria-hidden="true" className="sidebar__icon" />
             <span>Cerrar sesión</span>
@@ -88,6 +88,9 @@ const Layout = () => {
         </div>
       </aside>
       <main className="layout__main">
+        <div className="layout__topbar">
+          <ThemeToggle />
+        </div>
         <Outlet />
       </main>
     </div>

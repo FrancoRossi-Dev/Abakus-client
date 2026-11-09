@@ -15,10 +15,59 @@ backend.interceptors.request.use((config) => {
   return config;
 });
 
+/*
+ * Reintento automático ante fallas de red.
+ * La API corre en Vercel (serverless): tras un rato sin uso, el primer pedido puede caer mientras
+ * la función arranca y se conecta a la base, y Vercel responde sin cabeceras CORS. El navegador lo
+ * ve como "sin respuesta". Esperar un momento y repetir el pedido suele alcanzar.
+ *
+ * Solo se reintenta cuando es seguro hacerlo:
+ * - pedidos GET (repetirlos no crea ni modifica datos)
+ * - sin respuesta del servidor (un 4xx/5xx con respuesta es un error real y se muestra tal cual)
+ * - no cancelados ni vencidos por timeout
+ * - sin `retry: false` en la config (ej. el análisis con IA: repetirlo gastaría otra consulta)
+ */
+const RETRY_DELAYS_MS = [1000, 2000];
+
+const shouldRetry = (error) => {
+  const { config } = error;
+  if (!config || config.retry === false) return false;
+  if ((config.method ?? 'get').toLowerCase() !== 'get') return false;
+  if (error.response || !error.request) return false;
+  if (axios.isCancel(error) || error.code === 'ECONNABORTED') return false;
+  return (config.retryCount ?? 0) < RETRY_DELAYS_MS.length;
+};
+
+// Espera antes de reintentar; si el componente cancela el pedido mientras tanto, corta
+const wait = (ms, signal) =>
+  new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new axios.CanceledError());
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new axios.CanceledError());
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
+  });
+
 // Para las respuestas, este interceptor maneja los errores
 backend.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    if (shouldRetry(error)) {
+      const { config } = error;
+      const attempt = config.retryCount ?? 0;
+      config.retryCount = attempt + 1;
+      await wait(RETRY_DELAYS_MS[attempt], config.signal);
+      return backend(config);
+    }
+
     const status = error.response?.status;
     const isAuthRoute = error.config?.url?.startsWith('/auth/');
 

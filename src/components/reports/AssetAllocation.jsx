@@ -3,12 +3,15 @@ import { ArcElement, Chart as ChartJS, Tooltip } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { formatAmount, formatPercent, formatUSD } from '../../utils/format';
 import { buildAllocationSlices } from './allocation';
+import { readToken, useTheme } from '../../theme/theme';
 import './AssetAllocation.css';
 
 ChartJS.register(ArcElement, Tooltip);
 
 const AssetAllocationChart = ({ clientId }) => {
   const { clientId: reportClientId, byInstrumentType } = useSelector((state) => state.reports);
+  // Chart.js dibuja en canvas y no lee CSS: re-renderiza al cambiar de tema para tomar los colores nuevos
+  const theme = useTheme();
 
   if (reportClientId !== clientId) return null;
 
@@ -25,8 +28,8 @@ const AssetAllocationChart = ({ clientId }) => {
       {
         data: slices.map((slice) => slice.value),
         backgroundColor: slices.map((slice) => slice.color),
-        // separación de 2 px del color de la superficie entre porciones
-        borderColor: '#ffffff',
+        // separación de 2 px del color de la superficie entre porciones (sigue al tema)
+        borderColor: readToken('--color-surface') || '#ffffff',
         borderWidth: 2,
         hoverOffset: 4,
       },
@@ -53,6 +56,7 @@ const AssetAllocationChart = ({ clientId }) => {
     <div className='allocation'>
       <div className='allocation__chart'>
         <Doughnut
+          key={theme}
           data={data}
           options={options}
           role='img'

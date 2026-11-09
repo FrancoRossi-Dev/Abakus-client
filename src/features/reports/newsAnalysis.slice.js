@@ -61,6 +61,9 @@ export const fetchNewsAnalysis = createAsyncThunk(
         params: { lang: 'es' },
         // la API espera hasta ~2 minutos a la IA (60 s + un reintento)
         timeout: 150_000,
+        // sin reintento automático: una falla de red puede llegar después de que la IA ya
+        // procesó el pedido, y repetirlo gastaría otra consulta del cupo
+        retry: false,
       });
       return { generatedAt: data.date, report: data.data };
     } catch (err) {

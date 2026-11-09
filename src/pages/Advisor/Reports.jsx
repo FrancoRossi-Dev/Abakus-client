@@ -7,6 +7,7 @@ import backend from '../../api/backend';
 import AssetAllocationChart from '../../components/reports/AssetAllocation';
 import NewsAnalysis from '../../components/reports/NewsAnalysis';
 import { buildAllocationSlices } from '../../components/reports/allocation';
+import ClientAvatar from '../../components/clients/ClientAvatar';
 import { downloadReportPdf } from '../../components/reports/pdf/downloadReportPdf';
 import Button from '../../components/shared/button/Button';
 import DataTable from '../../components/shared/table/DataTable';
@@ -230,7 +231,7 @@ const ClientReport = ({ client, banks }) => {
     setIsExporting(true);
     try {
       await downloadReportPdf({
-        client: report.client,
+        client: { ...report.client, logoURL: client.clientDetails.logoURL },
         reportWindow,
         totalMarketValue,
         instrumentCount: composition.byInstrument.length,
@@ -284,17 +285,24 @@ const ClientReport = ({ client, banks }) => {
   return (
     <div className='report'>
       <header className='report__header'>
-        <div className='page-header__text'>
-          <h2 className='report__title'>{report.client.commercialName}</h2>
-          <p className='page-header__subtitle'>
-            {report.client.legalName}
-            {reportWindow && (
-              <>
-                {' · '}Posiciones informadas del {formatIsoDate(reportWindow.from)} al{' '}
-                {formatIsoDate(reportWindow.to)}
-              </>
-            )}
-          </p>
+        <div className='client-identity'>
+          <ClientAvatar
+            name={report.client.commercialName}
+            src={client.clientDetails.logoURL}
+            size='lg'
+          />
+          <div className='page-header__text'>
+            <h2 className='report__title'>{report.client.commercialName}</h2>
+            <p className='page-header__subtitle'>
+              {report.client.legalName}
+              {reportWindow && (
+                <>
+                  {' · '}Posiciones informadas del {formatIsoDate(reportWindow.from)} al{' '}
+                  {formatIsoDate(reportWindow.to)}
+                </>
+              )}
+            </p>
+          </div>
         </div>
         <div className='page__actions'>
           <Link to={`/clients/${clientId}`} className='button button--tertiary'>
@@ -493,8 +501,15 @@ const ClientList = ({ clients, selectedId, onSelect }) => {
                 className='client-list__item'
                 aria-current={selectedId === client._id ? 'true' : undefined}
                 onClick={() => onSelect(client._id)}>
-                <span className='client-list__name'>{client.clientDetails.commercialName}</span>
-                <span className='client-list__legal'>{client.clientDetails.legalName}</span>
+                <ClientAvatar
+                  name={client.clientDetails.commercialName}
+                  src={client.clientDetails.logoURL}
+                  size='sm'
+                />
+                <span className='client-list__text'>
+                  <span className='client-list__name'>{client.clientDetails.commercialName}</span>
+                  <span className='client-list__legal'>{client.clientDetails.legalName}</span>
+                </span>
               </button>
             </li>
           ))}

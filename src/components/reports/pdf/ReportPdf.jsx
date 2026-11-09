@@ -1,4 +1,4 @@
-import { Circle, Document, G, Link, Page, Path, Svg, Text, View } from '@react-pdf/renderer';
+import { Circle, Document, G, Image, Link, Page, Path, Svg, Text, View } from '@react-pdf/renderer';
 import MarkdownPdf from './MarkdownPdf';
 import { COLORS, styles } from './pdfStyles';
 import {
@@ -250,12 +250,18 @@ const ReportPdf = ({ data }) => {
         </View>
 
         <View style={styles.header}>
-          <Text style={styles.title}>{client.commercialName}</Text>
-          <Text style={styles.subtitle}>
-            {client.legalName}
-            {reportWindow &&
-              ` · Posiciones informadas del ${formatIsoDate(reportWindow.from)} al ${formatIsoDate(reportWindow.to)}`}
-          </Text>
+          {/* client.logo: data URL PNG/JPG ya descargado (downloadReportPdf), o null */}
+          {client.logo ?
+            <Image src={client.logo} style={styles.clientLogo} />
+          : null}
+          <View style={styles.headerText}>
+            <Text style={styles.title}>{client.commercialName}</Text>
+            <Text style={styles.subtitle}>
+              {client.legalName}
+              {reportWindow &&
+                ` · Posiciones informadas del ${formatIsoDate(reportWindow.from)} al ${formatIsoDate(reportWindow.to)}`}
+            </Text>
+          </View>
         </View>
 
         {hasPositions ?

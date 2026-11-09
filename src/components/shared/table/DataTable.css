@@ -66,9 +66,9 @@ th[data-align='end'] .data-table__sort {
 
 .data-table__row--selected,
 .data-table__row--selected:hover {
-  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
-  box-shadow: inset 3px 0 0 var(--color-action-primary);
+  background: var(--color-surface-selected);
 }
+
 
 .data-table__row--selectable:focus-visible {
   outline: 2px solid var(--color-action-primary);
