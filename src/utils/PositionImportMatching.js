@@ -15,17 +15,16 @@ export const normalizeName = (text = '') =>
 
 const activeAccounts = (client) => client.bankAccounts.filter((account) => !account.isDeleted);
 
-// Cliente cuyo nombre comercial o razón social coincide con el nombre del reporte
-export const matchClient = (clientName, clients) => {
+// Clientes cuyo nombre comercial o razón social coincide con el nombre del reporte.
+// Más de uno = nombre ambiguo: no se asocia solo, se elige a mano
+export const findClientMatches = (clientName, clients) => {
   const name = normalizeName(clientName);
-  if (!name) return null;
+  if (!name) return [];
 
-  return (
-    clients.find(
-      (client) =>
-        normalizeName(client.clientDetails.commercialName) === name ||
-        normalizeName(client.clientDetails.legalName) === name,
-    ) ?? null
+  return clients.filter(
+    (client) =>
+      normalizeName(client.clientDetails.commercialName) === name ||
+      normalizeName(client.clientDetails.legalName) === name,
   );
 };
 
@@ -62,7 +61,8 @@ export const buildGroups = (importRows, { clients, banks, clientChoices = {}, ac
   });
 
   return [...groupsByKey.values()].map((group) => {
-    const autoClient = matchClient(group.clientName, clients);
+    const candidates = findClientMatches(group.clientName, clients);
+    const autoClient = candidates.length === 1 ? candidates[0] : null;
     const choice = clientChoices[group.key];
     const isSkipped = choice === SKIP;
     const client =
@@ -91,7 +91,13 @@ export const buildGroups = (importRows, { clients, banks, clientChoices = {}, ac
           (activeAccounts(client).find((candidate) => candidate._id === accountChoice) ?? null)
         : matchAccount(client, entry.bankName, entry.accountNumber, banks);
 
-      return { ...entry, key, account, status: account ? 'ok' : 'unmatched' };
+      return {
+        ...entry,
+        key,
+        account,
+        isAutoMatched: Boolean(account) && !accountChoice,
+        status: account ? 'ok' : 'unmatched',
+      };
     });
 
     let status = 'ok';
@@ -104,6 +110,7 @@ export const buildGroups = (importRows, { clients, banks, clientChoices = {}, ac
       client,
       // El nombre coincidió solo: no hace falta mostrar el desplegable
       isAutoMatched: Boolean(autoClient) && !choice,
+      isAmbiguous: candidates.length > 1,
       accounts,
       status,
     };

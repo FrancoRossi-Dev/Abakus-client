@@ -158,8 +158,20 @@
   font: var(--type-body);
 }
 
+.import-group__account {
+  display: grid;
+  gap: var(--space-stack-xs);
+}
+
 .import-group__account .form-field {
   max-width: 32rem;
+}
+
+.import-group__account-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-inline-sm);
 }
 
 .import-group__details summary {

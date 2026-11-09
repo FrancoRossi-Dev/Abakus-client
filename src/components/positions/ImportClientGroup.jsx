@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import FormField from '../shared/form/FormField';
 import FormAlert from '../shared/form/FormAlert';
+import Button from '../shared/button/Button';
 import PositionPreview from './PositionPreview';
 import { SKIP } from '../../utils/PositionImportMatching';
 
@@ -18,14 +19,16 @@ const compareNames = (a, b) =>
     sensitivity: 'base',
   });
 
-// Una cuenta del reporte: muestra a qué cuenta del cliente va, o un desplegable si no coincidió sola
-const AccountRow = ({ entry, client, banks, accountChoice, onAccountChange, disabled }) => {
+// Una cuenta del reporte: a qué cuenta del cliente va, o un desplegable si no coincidió sola o se quiere cambiar.
+// isReported: la cuenta ya tiene posiciones con la misma fecha de reporte (posible archivo repetido)
+const AccountRow = ({ entry, client, banks, accountChoice, onAccountChange, isReported, disabled }) => {
   const fieldId = useId();
   const bankNames = new Map(banks.map((bank) => [bank._id, bank.name]));
   const accountLabel = (account) =>
     `${account.accountName} · ${bankNames.get(account.bankId) ?? 'Banco desconocido'} (${account.number})`;
 
   const reportLabel = `${entry.bankName || 'Sin banco'} · ${entry.accountNumber || 'sin número'}`;
+  const positionsLabel = pluralize(entry.rows.length, 'posición', 'posiciones');
   const showSelect = entry.status === 'unmatched' || Boolean(accountChoice);
 
   return (
@@ -34,9 +37,9 @@ const AccountRow = ({ entry, client, banks, accountChoice, onAccountChange, disa
         <FormField
           as='select'
           id={fieldId}
-          label={`Cuenta para ${reportLabel} (${pluralize(entry.rows.length, 'posición', 'posiciones')})`}
+          label={`Cuenta para ${reportLabel} (${positionsLabel})`}
           hint={
-            entry.status === 'unmatched' ?
+            entry.status === 'unmatched' && !accountChoice ?
               'Esta cuenta no coincide con ninguna cuenta activa del cliente.'
             : undefined
           }
@@ -53,11 +56,27 @@ const AccountRow = ({ entry, client, banks, accountChoice, onAccountChange, disa
             ))}
           <option value={SKIP}>No importar estas posiciones</option>
         </FormField>
-      : <p>
-          {reportLabel} → <strong>{accountLabel(entry.account)}</strong> (
-          {pluralize(entry.rows.length, 'posición', 'posiciones')})
-        </p>
+      : <div className='import-group__account-line'>
+          <p>
+            {reportLabel} → <strong>{accountLabel(entry.account)}</strong> ({positionsLabel})
+          </p>
+          {/* Elegir la misma cuenta a mano muestra el desplegable, ya con ella seleccionada */}
+          <Button
+            type='tertiary'
+            label='Cambiar'
+            aria-label={`Cambiar la cuenta de ${reportLabel}`}
+            onClick={() => onAccountChange(entry.key, entry.account._id)}
+            disabled={disabled}
+          />
+        </div>
       }
+
+      {isReported && (
+        <FormAlert tone='info'>
+          Esta cuenta ya tiene posiciones con la misma fecha de reporte. Si es un archivo que ya se
+          importó, se van a duplicar.
+        </FormAlert>
+      )}
     </li>
   );
 };
@@ -69,6 +88,7 @@ const ImportClientGroup = ({
   banks,
   clientChoices,
   accountChoices,
+  reportedAccountIds,
   onClientChange,
   onAccountChange,
   disabled,
@@ -89,6 +109,14 @@ const ImportClientGroup = ({
           )}
         </h3>
         <span className='import-group__status'>{STATUS_LABELS[group.status]}</span>
+        {group.isAutoMatched && (
+          <Button
+            type='tertiary'
+            label='Cambiar cliente'
+            onClick={() => onClientChange(group.key, group.client._id)}
+            disabled={disabled}
+          />
+        )}
         <span className='import-group__count'>
           {pluralize(group.rows.length, 'posición', 'posiciones')}
         </span>
@@ -96,8 +124,10 @@ const ImportClientGroup = ({
 
       {group.status === 'unmatchedClient' && (
         <FormAlert tone='warning'>
-          «{group.clientName}» no coincide con ningún cliente. Elegí a qué cliente van sus posiciones o
-          dejalas afuera.
+          {group.isAmbiguous ?
+            `«${group.clientName}» coincide con más de un cliente. Elegí a cuál van sus posiciones o dejalas afuera.`
+          : `«${group.clientName}» no coincide con ningún cliente. Elegí a qué cliente van sus posiciones o dejalas afuera.`
+          }
         </FormAlert>
       )}
 
@@ -130,6 +160,7 @@ const ImportClientGroup = ({
               banks={banks}
               accountChoice={accountChoices[entry.key]}
               onAccountChange={onAccountChange}
+              isReported={entry.status === 'ok' && reportedAccountIds.has(entry.account._id)}
               disabled={disabled}
             />
           ))}
