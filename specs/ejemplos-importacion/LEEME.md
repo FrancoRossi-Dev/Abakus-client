@@ -20,26 +20,40 @@ La primera fila tiene los encabezados y cada fila siguiente es una posición. El
 | `marketValue` | no | Número positivo | `marketValue` |
 | `current` | sí | Moneda, ej. `USD` | `currency` |
 | `dateOfPurchase` | no* | Fecha | `dateOfPurchase` |
-| `dateOfReport` | no | Fecha | `dateOfReport` |
+| `dateOfReport` | no** | Fecha | `dateOfReport` |
 
 \* La API exige la fecha de compra. Si la celda viene vacía, se usa la "Fecha de compra predeterminada" del formulario.
+
+\*\* Si no viene, la API usa la fecha de la subida. Los ejemplos no la traen.
 
 ## Cómo se asocia cada fila
 
 1. **Cliente**: `nameAccount` contra el nombre comercial o la razón social de los clientes del advisor, sin distinguir mayúsculas, tildes ni espacios de más.
 2. **Cuenta**: dentro de ese cliente, la cuenta activa del banco `Bank` con número `numberAccount`.
-3. Si un nombre no coincide con ningún cliente, se avisa y se elige el cliente en un desplegable (o "No importar estas posiciones").
+3. Si un nombre no coincide con ningún cliente, o coincide con más de uno, se avisa y se elige el cliente en un desplegable (o "No importar estas posiciones").
 4. Si el cliente coincide pero la cuenta no, se elige una de sus cuentas activas en un desplegable (o "No importar").
-5. "Importar" se habilita cuando todo está asociado u omitido. Se envía todo en un solo `POST /v1/position`: si la API rechaza alguna fila, no se guarda ninguna y el error indica la fila del Excel.
+5. Lo que se asoció solo se puede corregir con "Cambiar cliente" / "Cambiar".
+6. Si una cuenta ya tiene posiciones con la misma fecha de reporte (por ejemplo, el mismo archivo subido dos veces el mismo día), se avisa. No bloquea: subir un archivo repetido duplica sus posiciones.
+7. "Importar" se habilita cuando todo está asociado u omitido. Se envía todo en un solo `POST /v1/position`: si la API rechaza alguna fila, no se guarda ninguna y el error indica la fila del Excel.
 
 ## Archivos
 
 | Archivo | Contenido | Filas |
 |---|---|---|
-| `posiciones-todos-los-bancos.xlsm` | Reporte completo, los 9 bancos (origen de los demás) | 900 |
-| `posiciones-morgan-stanley.xlsx`, `posiciones-jpm.xlsx`, `posiciones-stonex.xlsx`, `posiciones-ubs.xlsx`, `posiciones-ubp.xlsx`, `posiciones-julius-baer.xlsx`, `posiciones-edr.xlsx`, `posiciones-lgt.xlsx`, `posiciones-efg.xlsx` | Un banco cada uno: 10 clientes × 10 posiciones | 100 |
+| `posiciones-morgan-stanley.xlsx` | Yuji Itadori, Megumi Fushiguro, Nobara Kugisaki (10 c/u) | 30 |
+| `posiciones-jpm.xlsx` | Satoru Gojo, Tanjiro Kamado, Nezuko Kamado, Zenitsu Agatsuma (8, 8, 7, 7) | 30 |
+| `posiciones-stonex.xlsx` | Zenitsu Agatsuma, Maomao, Jinshi | 30 |
+| `posiciones-ubs.xlsx` | Hyakkimaru, Yuji Itadori, Megumi Fushiguro, Nobara Kugisaki | 30 |
+| `posiciones-ubp.xlsx` | Nobara Kugisaki, Satoru Gojo, Tanjiro Kamado | 30 |
+| `posiciones-julius-baer.xlsx` | Nezuko Kamado, Zenitsu Agatsuma, Maomao, Jinshi | 30 |
+| `posiciones-edr.xlsx` | Jinshi, Hyakkimaru, Yuji Itadori | 30 |
+| `posiciones-lgt.xlsx` | Megumi Fushiguro, Nobara Kugisaki, Satoru Gojo, Tanjiro Kamado | 30 |
+| `posiciones-efg.xlsx` | Tanjiro Kamado, Nezuko Kamado, Zenitsu Agatsuma | 30 |
 | `posiciones-para-asociar.xlsx` | UBS, para probar la asociación manual (ver abajo) | 12 |
 | `posiciones-con-errores.xlsx` | Errores de datos por fila (ver abajo) | 8 |
+| `posiciones-todos-los-bancos.xlsm` | Reporte completo de origen (9 bancos × 10 clientes × 10 posiciones); no es para la demo | 900 |
+
+Cada archivo por banco tiene 3 clientes con 10 posiciones o 4 clientes con 8, 8, 7 y 7.
 
 `posiciones-para-asociar.xlsx` tiene 4 clientes de 3 posiciones:
 
@@ -55,6 +69,7 @@ La primera fila tiene los encabezados y cada fila siguiente es una posición. El
 1. En la API, correr el seed (`node scripts/seed-data.js`) y entrar con el advisor que crea.
 2. En `/clients`, "Importar posiciones" (no hace falta elegir cliente) y subir un archivo.
 3. Revisar la asociación y el resumen por cliente; "Importar N posiciones" las envía.
+4. Subir el mismo archivo otra vez el mismo día muestra el aviso de posiciones con la misma fecha de reporte.
 
 El servidor busca cada ISIN en OpenFIGI. Si alguno no se encuentra, la API lo informa por fila.
 
