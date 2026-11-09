@@ -28,7 +28,8 @@ const showDate = (value) => {
     return <span className='position-preview__empty'>{EMPTY_VALUE}</span>;
   }
 
-  return new Date(value).toLocaleDateString('es-UY');
+  // Las fechas del Excel son días sin hora (medianoche UTC): en hora de Uruguay serían el día anterior
+  return new Date(value).toLocaleDateString('es-UY', { timeZone: 'UTC' });
 };
 
 const columns = [
