@@ -25,7 +25,7 @@ const normalize = (text = '') =>
 
 const compareText = (a, b) => (a || '').localeCompare(b || '', 'es', { sensitivity: 'base' });
 
-// selectedClientId / onSelect: el cliente elegido en la lista (para importar sus posiciones)
+// selectedClientId / onSelect (opcionales): resaltan el cliente elegido en la lista
 const ClientTable = ({ clients, managers, onCreate, selectedClientId, onSelect }) => {
   const searchId = useId();
   const navigate = useNavigate();
