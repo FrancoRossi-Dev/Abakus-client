@@ -98,6 +98,16 @@ export const createPositionsSchema = Joi.array().items(createPositionSchema).min
   "any.required": "At least one position is required.",
 });
 
+// Importación desde Excel: los datos de cada fila se validan antes de saber a qué cliente y cuenta van.
+// clientId y bankAccountId se agregan al asociar la fila, y los vuelve a validar la API al confirmar
+export const importRowSchema = createPositionSchema.fork(["clientId", "bankAccountId"], (schema) =>
+  schema.optional(),
+);
+
+export const importRowsSchema = Joi.array().items(importRowSchema).min(1).required().messages({
+  "array.min": "The file has no positions.",
+});
+
 export const updatePositionSchema = Joi.object({
   // Moving a position is checked by the API against the requester's clients
   clientId: Joi.string().hex().length(24).lowercase().messages({
