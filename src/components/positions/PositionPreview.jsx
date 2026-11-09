@@ -63,20 +63,14 @@ const columns = [
   { key: 'dateOfReport', header: 'Fecha de reporte', render: (row) => showDate(row.dateOfReport) },
 ];
 
-// Muestra las posiciones leídas del Excel antes de enviarlas al servidor
+// Muestra las posiciones leídas del Excel antes de enviarlas al servidor.
+// Todavía no tienen _id: cada una trae rowNumber, su fila en el Excel
 const PositionPreview = ({ positions }) => {
-  // Las posiciones todavía no tienen _id: se identifican por su fila en el Excel
-  // (+2 porque la fila 1 son los encabezados)
-  const rows = positions.map((position, index) => ({
-    ...position,
-    rowNumber: index + 2,
-  }));
-
   return (
     <div className='position-preview' data-density='compact'>
       <DataTable
         columns={columns}
-        data={rows}
+        data={positions}
         getRowKey={(row) => row.rowNumber}
         itemLabel='posiciones'
       />

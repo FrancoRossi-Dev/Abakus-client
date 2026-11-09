@@ -1,28 +1,31 @@
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { readSheet } from 'read-excel-file/browser';
 import backend from '../../api/backend';
-import { createPositionsSchema } from '../../validators/positions.validators';
-import PositionPreview from './PositionPreview';
+import { importRowsSchema } from '../../validators/positions.validators';
+import ImportClientGroup from './ImportClientGroup';
 import FormField from '../shared/form/FormField';
 import FormAlert from '../shared/form/FormAlert';
 import Button from '../shared/button/Button';
 import {
-  EXCEL_COLUMNS,
+  OPTIONAL_COLUMNS,
+  REQUIRED_COLUMNS,
   apiDetailsToRowErrors,
-  rowsToPositions,
+  findMissingColumns,
+  rowsToImportRows,
   toRowErrors,
 } from '../../utils/PositionImportExcel';
+import { buildGroups, buildPayload, hasUnresolvedGroups } from '../../utils/PositionImportMatching';
 import './PositionImportForm.css';
 
-const OPTIONAL_COLUMNS = ['Precio actual', 'Valor de mercado', 'Fecha de compra', 'Fecha de reporte'];
-const REQUIRED_COLUMNS = Object.keys(EXCEL_COLUMNS).filter(
-  (column) => !OPTIONAL_COLUMNS.includes(column),
-);
+const pluralize = (count, singular, plural) => `${count} ${count === 1 ? singular : plural}`;
+
+// Primero lo que falta asociar, después lo que se importa y al final lo que se deja afuera
+const STATUS_ORDER = { unmatchedClient: 0, unmatchedAccount: 1, ok: 2, skipped: 3 };
 
 // Indicador de paso: deja claro dónde está el usuario y cuánto falta
 const Steps = ({ current }) => (
   <ol className='import-steps' aria-label='Pasos de la importación'>
-    {['Elegir cuenta y archivo', 'Revisar y confirmar'].map((label, index) => {
+    {['Elegir archivo', 'Asociar y confirmar'].map((label, index) => {
       const step = index + 1;
       const state =
         step < current ? 'done'
@@ -47,18 +50,13 @@ const Steps = ({ current }) => (
   </ol>
 );
 
-// client: el cliente ya elegido en la lista de la página; acá solo se elige banco, cuenta y archivo
-const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
+// Un reporte de banco trae posiciones de varios clientes: cada fila se asocia a un cliente y una cuenta
+// por el nombre del cliente, el banco y el número de cuenta; lo que no coincide se elige a mano
+const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
   // campos se registan con id de useID para los campos del formulario
-  const bankFieldId = useId();
-  const accountFieldId = useId();
   const fileFieldId = useId();
   const purchaseDateFieldId = useId();
 
-  // estados de los seletores y el archivo subido
-  const clientId = client._id;
-  const [bankId, setBankId] = useState('');
-  const [bankAccountId, setBankAccountId] = useState('');
   const [file, setFile] = useState(null);
 
   // Opcional: se aplica a las filas del Excel que no traen fecha de compra
@@ -67,34 +65,43 @@ const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
   // Cambiar la key del input de archivo lo vuelve a crear vacío (así se "limpia" en React)
   const [fileInputKey, setFileInputKey] = useState(0);
 
-  // null = todavía no se revisó un archivo; si tiene datos, se muestra la vista previa
-  const [previewPositions, setPreviewPositions] = useState(null);
+  // null = todavía no se revisó un archivo; si tiene datos, se muestra el paso 2
+  const [importRows, setImportRows] = useState(null);
+
+  // Lo elegido a mano en los desplegables: { [clave]: id | SKIP }
+  const [clientChoices, setClientChoices] = useState({});
+  const [accountChoices, setAccountChoices] = useState({});
 
   // estados de la transaccion
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [rowErrors, setRowErrors] = useState([]);
 
-  // Cuentas activas del cliente en el banco elegido
-  const accounts =
-    bankId ?
-      client.bankAccounts.filter((account) => account.bankId === bankId && !account.isDeleted)
-    : [];
+  const groups = useMemo(() => {
+    if (!importRows) return [];
+    return buildGroups(importRows, { clients, banks, clientChoices, accountChoices }).sort(
+      (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
+    );
+  }, [importRows, clients, banks, clientChoices, accountChoices]);
 
-  const selectedAccount = accounts.find((account) => account._id === bankAccountId);
-  const selectedBank = banks.find((bank) => bank._id === bankId);
+  const payload = useMemo(() => buildPayload(groups), [groups]);
+  const isUnresolved = hasUnresolvedGroups(groups);
 
-  const canReview = bankId && bankAccountId && file && !isSubmitting;
-  const hasNoAccounts = bankId && accounts.length === 0;
-
-  // Al cambiar el banco, la cuenta elegida deja de valer
-  const handleBankChange = (event) => {
-    setBankId(event.target.value);
-    setBankAccountId('');
-  };
+  const canReview = file && !isSubmitting;
+  const canConfirm = !isUnresolved && payload.positions.length > 0 && !isSubmitting;
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0] || null);
+  };
+
+  // '' vuelve a la asociación automática
+  const updateChoice = (setChoices) => (key, value) => {
+    setChoices((choices) => {
+      const next = { ...choices };
+      if (value) next[key] = value;
+      else delete next[key];
+      return next;
+    });
   };
 
   // Paso 1: lee y valida el Excel. No llama al servidor.
@@ -115,37 +122,51 @@ const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
         return;
       }
 
-      const positions = rowsToPositions(rows, clientId, bankAccountId, defaultPurchaseDate);
+      const missingColumns = findMissingColumns(rows[0]);
+      if (missingColumns.length > 0) {
+        setError(`Al archivo le faltan columnas obligatorias: ${missingColumns.join(', ')}.`);
+        return;
+      }
 
-      // Se valida antes de mostrar la vista previa, para marcar los errores fila por fila
-      const validation = createPositionsSchema.validate(positions, { abortEarly: false });
+      const parsedRows = rowsToImportRows(rows, defaultPurchaseDate);
+      const rowNumbers = parsedRows.map((row) => row.rowNumber);
+
+      // Se valida antes de mostrar el paso 2, para marcar los errores fila por fila
+      const validation = importRowsSchema.validate(
+        parsedRows.map((row) => row.position),
+        { abortEarly: false },
+      );
 
       if (validation.error) {
         setError('El archivo tiene errores. Corregilos y volvé a subirlo.');
-        setRowErrors(toRowErrors(validation.error));
+        setRowErrors(toRowErrors(validation.error, rowNumbers));
         return;
       }
 
       // validation.value tiene los datos ya normalizados por Joi (ISIN en mayúsculas, textos sin espacios)
-      setPreviewPositions(validation.value);
+      setImportRows(
+        parsedRows.map((row, index) => ({ ...row, position: validation.value[index] })),
+      );
+      setClientChoices({});
+      setAccountChoices({});
     } catch {
-      setError('No se pudo leer el archivo. Revisá que sea un Excel (.xlsx).');
+      setError('No se pudo leer el archivo. Revisá que sea un Excel (.xlsx o .xlsm).');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Paso 2, opción Descartar: vuelve al formulario sin enviar nada.
-  // Se mantienen cliente, banco y cuenta; el archivo se vacía.
+  // Paso 2, opción Descartar: vuelve al formulario sin enviar nada; el archivo se vacía
   const handleDiscard = () => {
-    setPreviewPositions(null);
+    setImportRows(null);
     setFile(null);
     setFileInputKey((key) => key + 1);
     setError('');
     setRowErrors([]);
   };
 
-  // Paso 2, opción Confirmar: recién acá se envían las posiciones al servidor
+  // Paso 2, opción Confirmar: todas las posiciones van en un solo POST. La API valida todo antes de
+  // guardar, así que si algo falla no queda una importación a medias
   const handleConfirm = async () => {
     setError('');
     setRowErrors([]);
@@ -153,15 +174,18 @@ const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
 
     try {
       // El token lo agrega el interceptor de backend.js
-      const response = await backend.post('/position', previewPositions);
+      const response = await backend.post('/position', payload.positions);
 
-      onSuccess({ count: response.data.positionIDs.length });
+      onSuccess({
+        count: response.data.positionIDs.length,
+        clientCount: new Set(payload.positions.map((position) => position.clientId)).size,
+      });
     } catch (error) {
       setError(error.userMessage || 'No se pudieron importar las posiciones.');
 
       const details = error.response?.data?.details;
       if (details) {
-        setRowErrors(apiDetailsToRowErrors(details));
+        setRowErrors(apiDetailsToRowErrors(details, payload.rowNumbers));
       }
     } finally {
       setIsSubmitting(false);
@@ -181,33 +205,75 @@ const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
     </FormAlert>
   );
 
-  // Paso 2: vista previa de lo que se va a importar
-  if (previewPositions) {
+  // Paso 2: asociación y resumen por cliente de lo que se va a importar
+  if (importRows) {
+    const accountCount = new Set(payload.positions.map((position) => position.bankAccountId)).size;
+    const clientCount = new Set(payload.positions.map((position) => position.clientId)).size;
+    const skippedCount = importRows.length - payload.positions.length;
+    const unresolvedCount = groups.filter(
+      (group) => group.status === 'unmatchedClient' || group.status === 'unmatchedAccount',
+    ).length;
+
     return (
       <div className='position-import modal-content--wide'>
         <Steps current={2} />
 
-        {/* Resumen del destino: se confirma qué se importa y dónde */}
         <dl className='import-summary'>
           <div className='import-summary__item'>
-            <dt>Cliente</dt>
-            <dd>{client.clientDetails.commercialName}</dd>
-          </div>
-          <div className='import-summary__item'>
-            <dt>Cuenta</dt>
+            <dt>Clientes en el archivo</dt>
             <dd>
-              {selectedAccount.accountName} · {selectedBank?.name} ({selectedAccount.number})
+              <data value={groups.length}>{groups.length}</data>
             </dd>
           </div>
           <div className='import-summary__item'>
-            <dt>Posiciones</dt>
+            <dt>Clientes a importar</dt>
             <dd>
-              <data value={previewPositions.length}>{previewPositions.length}</data>
+              <data value={clientCount}>{clientCount}</data>
             </dd>
           </div>
+          <div className='import-summary__item'>
+            <dt>Cuentas</dt>
+            <dd>
+              <data value={accountCount}>{accountCount}</data>
+            </dd>
+          </div>
+          <div className='import-summary__item'>
+            <dt>Posiciones a importar</dt>
+            <dd>
+              <data value={payload.positions.length}>{payload.positions.length}</data>
+            </dd>
+          </div>
+          {skippedCount > 0 && (
+            <div className='import-summary__item'>
+              <dt>Sin importar</dt>
+              <dd>
+                <data value={skippedCount}>{skippedCount}</data>
+              </dd>
+            </div>
+          )}
         </dl>
 
-        <PositionPreview positions={previewPositions} />
+        {isUnresolved && (
+          <FormAlert tone='warning' title={`Falta asociar ${pluralize(unresolvedCount, 'cliente', 'clientes')}`}>
+            Elegí a qué cliente y cuenta van sus posiciones, o marcalas para no importarlas.
+          </FormAlert>
+        )}
+
+        <div className='import-groups' role='group' aria-label='Posiciones por cliente'>
+          {groups.map((group) => (
+            <ImportClientGroup
+              key={group.key}
+              group={group}
+              clients={clients}
+              banks={banks}
+              clientChoices={clientChoices}
+              accountChoices={accountChoices}
+              onClientChange={updateChoice(setClientChoices)}
+              onAccountChange={updateChoice(setAccountChoices)}
+              disabled={isSubmitting}
+            />
+          ))}
+        </div>
 
         {errorMessages}
 
@@ -221,10 +287,11 @@ const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
           <Button
             type='primary'
             label={
-              isSubmitting ? 'Importando...' : `Importar ${previewPositions.length} posiciones`
+              isSubmitting ? 'Importando...' : `Importar ${pluralize(payload.positions.length, 'posición', 'posiciones')}`
             }
+            title={isUnresolved ? 'Asociá todos los clientes y cuentas para importar' : undefined}
             onClick={handleConfirm}
-            disabled={isSubmitting}
+            disabled={!canConfirm}
             aria-busy={isSubmitting}
           />
         </div>
@@ -232,70 +299,24 @@ const PositionImportForm = ({ client, banks, onSuccess, onCancel }) => {
     );
   }
 
-  // Paso 1: elegir cliente, banco, cuenta y archivo
+  // Paso 1: elegir el archivo
   return (
     <form className='position-import' onSubmit={handleReview} noValidate>
       <Steps current={1} />
-
-      {/* El cliente se eligió en la lista: acá solo se muestra */}
-      <dl className='import-summary'>
-        <div className='import-summary__item'>
-          <dt>Cliente</dt>
-          <dd>{client.clientDetails.commercialName}</dd>
-        </div>
-      </dl>
-
-      <div className='position-import__row'>
-        <FormField
-          as='select'
-          id={bankFieldId}
-          label='Banco'
-          value={bankId}
-          onChange={handleBankChange}
-          disabled={isSubmitting}>
-          <option value=''>Elegí un banco</option>
-          {banks.map((bank) => (
-            <option key={bank._id} value={bank._id}>
-              {bank.name}
-            </option>
-          ))}
-        </FormField>
-
-        <FormField
-          as='select'
-          id={accountFieldId}
-          label='Cuenta'
-          hint={!bankId ? 'Elegí primero el banco.' : undefined}
-          value={bankAccountId}
-          onChange={(event) => setBankAccountId(event.target.value)}
-          disabled={isSubmitting || accounts.length === 0}>
-          <option value=''>Elegí una cuenta</option>
-          {accounts.map((account) => (
-            <option key={account._id} value={account._id}>
-              {account.accountName} ({account.number}, {account.currency})
-            </option>
-          ))}
-        </FormField>
-      </div>
-
-      {hasNoAccounts && (
-        <FormAlert tone='warning'>
-          El cliente no tiene cuentas activas en este banco. Elegí otro banco o agregale una cuenta.
-        </FormAlert>
-      )}
 
       <FormField
         key={fileInputKey}
         id={fileFieldId}
         type='file'
-        label='Archivo Excel (.xlsx)'
-        accept='.xlsx'
+        label='Reporte del banco (.xlsx o .xlsm)'
+        accept='.xlsx,.xlsm'
         onChange={handleFileChange}
         disabled={isSubmitting}
         hint={
           <>
-            La primera fila debe tener los encabezados. Obligatorios:{' '}
-            <strong>{REQUIRED_COLUMNS.join(', ')}</strong>. Opcionales: {OPTIONAL_COLUMNS.join(', ')}.
+            Puede traer posiciones de varios clientes y cuentas. La primera fila debe tener los
+            encabezados. Obligatorios: <strong>{REQUIRED_COLUMNS.join(', ')}</strong>. Opcionales:{' '}
+            {OPTIONAL_COLUMNS.join(', ')}.
           </>
         }
       />

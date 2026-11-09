@@ -23,10 +23,6 @@ const Clients = () => {
   const [banks, setBanks] = useState([]);
   const [managers, setManagers] = useState([]);
 
-  // cliente elegido en la tabla: habilita "Importar posiciones"
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const selectedClient = clients.find((client) => client._id === selectedClientId);
-
   const [showImportForm, setShowImportForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
 
@@ -70,9 +66,11 @@ const Clients = () => {
     setShowImportForm(false);
   };
 
-  const handleImportSuccess = ({ count }) => {
+  const handleImportSuccess = ({ count, clientCount }) => {
     setShowImportForm(false);
-    toast.success(`Se importaron ${count} posiciones.`);
+    toast.success(
+      `Se importaron ${count} posiciones de ${clientCount} ${clientCount === 1 ? 'cliente' : 'clientes'}.`,
+    );
   };
 
   const handleOpenClientForm = () => {
@@ -121,9 +119,7 @@ const Clients = () => {
               type='primary'
               icon={FiUpload}
               label='Importar posiciones'
-              title={selectedClient ? undefined : 'Seleccioná un cliente de la lista'}
               onClick={handleOpenImport}
-              disabled={!selectedClient}
             />
           </div>
         )}
@@ -149,8 +145,6 @@ const Clients = () => {
           clients={clients}
           managers={managers}
           onCreate={handleOpenClientForm}
-          selectedClientId={selectedClientId}
-          onSelect={setSelectedClientId}
         />
       )}
 
@@ -168,11 +162,11 @@ const Clients = () => {
         />
       </Modal>
 
-      {/* Modal de ingreso de datos */}
+      {/* Modal de importación: el reporte del banco trae varios clientes, se asocian al leerlo */}
       <Modal isOpen={showImportForm} onClose={handleCloseImport} title='Importar posiciones'>
-        {selectedClient && (
+        {showImportForm && (
           <PositionImportForm
-            client={selectedClient}
+            clients={clients}
             banks={banks}
             onSuccess={handleImportSuccess}
             onCancel={handleCloseImport}

@@ -86,3 +86,88 @@
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
+
+/* --- Posiciones agrupadas por cliente del reporte --- */
+.import-groups {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.import-group {
+  display: grid;
+  gap: var(--space-stack-sm);
+  padding: var(--space-card-padding-tight);
+  border: var(--border-default);
+  border-radius: var(--radius-card);
+}
+
+/* La gravedad también va en texto (import-group__status), no solo en el color del borde */
+.import-group--unmatchedClient,
+.import-group--unmatchedAccount {
+  border-color: var(--color-warning);
+}
+
+.import-group--skipped {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+}
+
+.import-group__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-inline-sm) var(--space-inline-md);
+}
+
+.import-group__title {
+  font: var(--type-body-strong);
+  color: var(--color-text);
+}
+
+.import-group__target {
+  font: var(--type-body);
+  color: var(--color-text-muted);
+}
+
+.import-group__status,
+.import-group__count {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+}
+
+.import-group__count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.import-group--unmatchedClient .import-group__status,
+.import-group--unmatchedAccount .import-group__status {
+  color: var(--color-text);
+  font-weight: var(--abk-font-weight-semibold);
+}
+
+.import-group__client {
+  max-width: 24rem;
+}
+
+.import-group__accounts {
+  display: grid;
+  gap: var(--space-stack-xs);
+  padding: 0;
+  list-style: none;
+  font: var(--type-body);
+}
+
+.import-group__account .form-field {
+  max-width: 32rem;
+}
+
+.import-group__details summary {
+  cursor: pointer;
+  font: var(--type-meta);
+  color: var(--color-text-link);
+}
+
+.import-group__details[open] summary {
+  margin-bottom: var(--space-stack-sm);
+}
