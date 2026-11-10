@@ -4,6 +4,7 @@ import LoginForm from '../components/login/LoginForm';
 
 const Login = () => {
   return (
+    <div className='login-page'>
     <AuthCard
       title='Iniciar sesión'
       description='Ingresá con tu usuario y contraseña.'
@@ -15,6 +16,7 @@ const Login = () => {
     >
       <LoginForm />
     </AuthCard>
+    </div>
   );
 };
 
