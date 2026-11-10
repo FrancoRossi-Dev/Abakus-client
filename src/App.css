@@ -718,15 +718,3 @@
   }
 }
 
-.login-page {
-  isolation: isolate;
-}
-
-.login-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: #0e151e url('/login-cotizacion.gif') center / cover no-repeat;
-}

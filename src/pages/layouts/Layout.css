@@ -215,3 +215,7 @@
     border-top: none;
   }
 }
+
+.guest:has(.login-page) {
+  background: #0e151e url('/login-cotizacion.gif') center / cover no-repeat;
+}
