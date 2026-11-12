@@ -21,6 +21,47 @@
   width: min(64rem, calc(100vw - 2 * var(--space-page-gutter-narrow)));
 }
 
+/* Pantalla completa (ej. importación de Excel): el encabezado con la cruz queda arriba,
+   el contenido scrollea por dentro y la barra de acciones queda fija abajo.
+   Va con dos clases para ganarle a la regla .modal:has(.modal-content--wide) */
+.modal.modal--full {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border-radius: 0;
+}
+
+.modal--full .modal__panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.modal--full .modal__header {
+  margin: 0;
+  padding: var(--space-stack-md) var(--space-card-padding);
+  border-bottom: var(--border-default);
+}
+
+.modal--full .modal__body {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-card-padding);
+  padding-bottom: 0;
+}
+
+.modal--full .modal__actions {
+  position: sticky;
+  bottom: 0;
+  margin-top: var(--space-stack-lg);
+  padding-bottom: var(--space-stack-md);
+  background: var(--color-surface);
+}
+
 /* Overlay negro transparente */
 .modal::backdrop {
   background: rgb(0 0 0 / 0.5);

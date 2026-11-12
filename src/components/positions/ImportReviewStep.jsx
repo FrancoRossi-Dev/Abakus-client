@@ -28,6 +28,7 @@ const ImportReviewStep = ({
   isSubmitting,
   onDiscard,
   onConfirm,
+  onCancel,
   error,
   rowErrors,
 }) => {
@@ -87,6 +88,8 @@ const ImportReviewStep = ({
       <ImportErrors error={error} rowErrors={rowErrors} />
 
       <div className='modal__actions'>
+        {/* Cancelar cierra sin importar nada; Volver deja elegir otro archivo */}
+        <Button type='tertiary' label='Cancelar' onClick={onCancel} disabled={isSubmitting} />
         <Button type='secondary' label='Descartar y volver' onClick={onDiscard} disabled={isSubmitting} />
         <Button
           type='primary'

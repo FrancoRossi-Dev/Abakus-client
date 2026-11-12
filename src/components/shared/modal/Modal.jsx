@@ -4,6 +4,7 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import './Modal.css';
 
 // size: "md" (predeterminado, formularios cortos) | "lg" (formularios en dos columnas) | "xl" (tablas)
+//       | "full" (pantalla completa, para flujos largos como la importación de Excel)
 const Modal = ({ isOpen, onClose, title, size = 'md', children }) => {
   const dialogRef = useRef(null);
   const titleId = useId();

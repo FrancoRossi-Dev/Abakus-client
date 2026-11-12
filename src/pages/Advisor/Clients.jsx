@@ -244,7 +244,11 @@ const Clients = () => {
       </Modal>
 
       {/* Modal de importación: el reporte del banco trae varios clientes, se asocian al leerlo */}
-      <Modal isOpen={showImportForm} onClose={() => setShowImportForm(false)} title='Importar posiciones'>
+      <Modal
+        isOpen={showImportForm}
+        onClose={() => setShowImportForm(false)}
+        title='Importar posiciones'
+        size='full'>
         {showImportForm && (
           <PositionImportForm
             clients={clients}

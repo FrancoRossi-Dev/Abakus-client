@@ -214,6 +214,7 @@ const PositionImportForm = ({ clients, banks, onSuccess, onCancel }) => {
         isSubmitting={isSubmitting}
         onDiscard={handleDiscard}
         onConfirm={handleConfirm}
+        onCancel={onCancel}
         error={error}
         rowErrors={rowErrors}
       />
