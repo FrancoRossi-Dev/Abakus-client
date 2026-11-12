@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePaginatedList } from '../../hooks/usePaginatedList';
 import AdvisorTable from '../../components/advisors/AdvisorTable';
 import AdvisorForm from '../../components/advisors/AdvisorForm';
 import Modal from '../../components/shared/modal/Modal';
@@ -11,8 +12,8 @@ const Advisors = () => {
 
   const [selectedAdvisor, setSelectedAdvisor] = useState(null);
 
-  // gestiona pagination
-  const [tableKey, setTableKey] = useState(0);
+  // La página es dueña del listado: lo recarga después de crear, editar o borrar
+  const list = usePaginatedList('/user/advisors', 15);
 
   const handleAdd = () => {
     setSelectedAdvisor(null);
@@ -29,9 +30,10 @@ const Advisors = () => {
     setSelectedAdvisor(null);
   };
 
+  // Un alta aparece en la página 1 (el listado viene del más reciente); una edición recarga la actual
   const handleSuccess = ({ created } = {}) => {
     handleClose();
-    if (created) setTableKey((key) => key + 1);
+    list.reload(created ? 1 : list.page);
   };
 
   return (
@@ -42,7 +44,7 @@ const Advisors = () => {
         actions={<Button type='primary' icon={FiPlus} label='Agregar advisor' onClick={handleAdd} />}
       />
 
-      <AdvisorTable key={tableKey} onEdit={handleEdit} />
+      <AdvisorTable list={list} onEdit={handleEdit} onDeleted={list.reload} />
 
       <Modal
         isOpen={showForm}

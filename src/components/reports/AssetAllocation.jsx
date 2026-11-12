@@ -1,4 +1,3 @@
-import { useSelector } from 'react-redux';
 import { ArcElement, Chart as ChartJS, Tooltip } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { formatAmount, formatPercent, formatUSD } from '../../utils/format';
@@ -8,12 +7,10 @@ import './AssetAllocation.css';
 
 ChartJS.register(ArcElement, Tooltip);
 
-const AssetAllocationChart = ({ clientId }) => {
-  const { clientId: reportClientId, byInstrumentType } = useSelector((state) => state.reports);
+// byInstrumentType: composición de la cartera por tipo de activo (la arma ClientReport)
+const AssetAllocationChart = ({ byInstrumentType }) => {
   // Chart.js dibuja en canvas y no lee CSS: re-renderiza al cambiar de tema para tomar los colores nuevos
   const theme = useTheme();
-
-  if (reportClientId !== clientId) return null;
 
   // Solo las categorías con valor: una porción vacía no aporta y ensucia la leyenda
   const slices = buildAllocationSlices(byInstrumentType);

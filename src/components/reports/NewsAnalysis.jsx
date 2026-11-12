@@ -6,9 +6,22 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FiAlertTriangle, FiCheckCircle, FiExternalLink, FiRefreshCw, FiZap } from 'react-icons/fi';
 import Button from '../shared/button/Button';
 import FormAlert from '../shared/form/FormAlert';
-import { fetchNewsAnalysis, selectNewsAnalysis } from '../../features/reports/newsAnalysis.slice';
+import backend from '../../api/backend';
+import {
+  analysisFailed,
+  analysisStarted,
+  analysisSucceeded,
+  selectNewsAnalysis,
+} from '../../features/reports/newsAnalysis.slice';
 import { formatIsoDate, formatPercent, formatTime } from '../../utils/format';
 import './NewsAnalysis.css';
+
+// La API responde en inglés: se traduce por código de estado para mostrarlo al usuario
+const ERROR_MESSAGES = {
+  404: 'Este cliente no tiene posiciones informadas en los últimos 30 días.',
+  429: 'Se alcanzó el límite de análisis con IA. Probá de nuevo en unos minutos.',
+  503: 'El servicio de análisis con IA no está disponible en este momento. Probá más tarde.',
+};
 
 // "https://www.reuters.com/markets/..." → "reuters.com"
 const getHostname = (url) => {
@@ -160,7 +173,31 @@ const NewsAnalysis = ({ clientId, hasPositions }) => {
   const entry = useSelector(selectNewsAnalysis(clientId));
 
   const status = entry?.status ?? 'idle';
-  const generate = () => dispatch(fetchNewsAnalysis({ clientId }));
+
+  // Pide el análisis a la IA. El botón solo aparece si no hay uno de hoy, y mientras uno está
+  // en curso se deshabilita: así cada cliente se analiza como máximo una vez por día
+  const generate = async () => {
+    if (status === 'loading' || status === 'succeeded') return;
+
+    dispatch(analysisStarted({ clientId }));
+    try {
+      const { data } = await backend.get(`/report/client/${clientId}/news`, {
+        params: { lang: 'es' },
+        // la API espera hasta ~2 minutos a la IA (60 s + un reintento)
+        timeout: 150_000,
+        // sin reintento automático: repetir el pedido gastaría otra consulta del cupo de IA
+        retry: false,
+      });
+      dispatch(analysisSucceeded({ clientId, generatedAt: data.date, report: data.data }));
+    } catch (err) {
+      const error =
+        ERROR_MESSAGES[err.response?.status] ||
+        (err.code === 'ECONNABORTED' ?
+          'El análisis tardó demasiado en responder. Probá de nuevo.'
+        : err.userMessage || 'No se pudo generar el análisis.');
+      dispatch(analysisFailed({ clientId, error }));
+    }
+  };
 
   return (
     <section className='card news-analysis' aria-labelledby='news-analysis-title' aria-busy={status === 'loading'}>

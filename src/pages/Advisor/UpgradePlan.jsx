@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import backend from '../../api/backend';
-import { FiStar } from 'react-icons/fi';
-import Button from '../../components/shared/button/Button';
+import { useDispatch, useSelector } from 'react-redux';
 import PageHeader from '../../components/shared/page/PageHeader';
 import LoadingState from '../../components/shared/page/LoadingState';
 import ErrorState from '../../components/shared/page/ErrorState';
+import PlanUsage from '../../components/plan/PlanUsage';
+import PlanUpgrade from '../../components/plan/PlanUpgrade';
+import backend from '../../api/backend';
+import { selectPlan, setPlan } from '../../features/account/account.slice';
 import './UpgradePlan.css';
 
 const PLAN_NAMES = { base: 'Base', premium: 'Premium' };
@@ -25,88 +26,38 @@ const renderValue = (value) => {
   return value;
 };
 
-const UsageBar = ({ label, used, limit }) => {
-  const percent = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-  return (
-    <div className='upgrade-plan__usage'>
-      <div className='upgrade-plan__usage-header'>
-        <span>{label}</span>
-        <span>{limit ? `${used} / ${limit}` : `${used} (sin límite)`}</span>
-      </div>
-      {limit && (
-        <div
-          className='upgrade-plan__bar'
-          role='progressbar'
-          aria-valuenow={used}
-          aria-valuemin={0}
-          aria-valuemax={limit}>
-          <div
-            className={`upgrade-plan__bar-fill${used >= limit ? ' upgrade-plan__bar-fill--full' : ''}`}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-
 const UpgradePlan = () => {
-  const [plan, setPlan] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const plan = useSelector(selectPlan);
   const [error, setError] = useState('');
-  const [upgrading, setUpgrading] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  // devuelve { planTier, used, limit, clientsRegistered }
-  const fetchPlan = () =>
-    backend
-      .get('/user/me/plan')
-      .then(({ data }) => {
-        setPlan(data);
-        setError('');
-      })
-      .catch((err) => setError(err.userMessage || 'No se pudo cargar tu plan.'))
-      .finally(() => setLoading(false));
-
+  // Siempre se pide de nuevo: el uso cambia al registrar o borrar clientes y cuentas
   useEffect(() => {
     let ignore = false;
     backend
       .get('/user/me/plan')
-      .then(({ data }) => !ignore && setPlan(data))
-      .catch((err) => !ignore && setError(err.userMessage || 'No se pudo cargar tu plan.'))
-      .finally(() => !ignore && setLoading(false));
+      .then(({ data }) => !ignore && dispatch(setPlan(data)))
+      .catch((err) => !ignore && setError(err.userMessage || 'No se pudo cargar tu plan.'));
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [dispatch, reloadKey]);
 
   const handleRetry = () => {
-    setLoading(true);
     setError('');
-    fetchPlan();
+    setReloadKey((key) => key + 1);
   };
 
-  const upgradePlan = async () => {
-    setUpgrading(true);
-    try {
-      await backend.patch('/user/me/plan', { planTier: 'premium' });
-      toast.success('¡Listo! Ya estás en el plan Premium.');
-      // vuelve a pedir el uso para que el límite quede actualizado
-      await fetchPlan();
-    } catch (err) {
-      toast.error(err.userMessage || 'No se pudo actualizar el plan.');
-    } finally {
-      setUpgrading(false);
-    }
-  };
-
-  if (loading) {
+  // Si ya había un plan cargado (de otra página) se muestra mientras se actualiza
+  if (!plan && !error) {
     return (
       <div className='page'>
         <LoadingState label='Cargando tu plan...' />
       </div>
     );
   }
-  if (error) {
+  if (!plan) {
     return (
       <div className='page'>
         <ErrorState message={error} onRetry={handleRetry} />
@@ -116,8 +67,7 @@ const UpgradePlan = () => {
 
   const isPremium = plan.planTier === 'premium';
   // si ya es premium la API manda limit null; para la tabla se muestra el límite base por defecto
-  const baseLimit = plan.limit ?? 4;
-  const features = getFeatures(baseLimit);
+  const features = getFeatures(plan.limit ?? 4);
 
   return (
     <div className='page upgrade-plan'>
@@ -126,11 +76,7 @@ const UpgradePlan = () => {
         subtitle='Revisá cuánto usás de tu plan y compará lo que incluye cada uno.'
       />
 
-      <section className='upgrade-plan__card'>
-        <h2>Uso actual</h2>
-        <UsageBar label='Clientes activos' used={plan.clientsRegistered} limit={plan.limit} />
-        <UsageBar label='Cuentas bancarias activas' used={plan.used} limit={plan.limit} />
-      </section>
+      <PlanUsage />
 
       <section className='upgrade-plan__card'>
         <h2>Compará los planes</h2>
@@ -158,18 +104,7 @@ const UpgradePlan = () => {
         </table>
       </section>
 
-      {isPremium ? (
-        <p className='upgrade-plan__done'>Ya tenés el plan Premium: no hay límites en tu cuenta.</p>
-      ) : (
-        <Button
-          type='primary'
-          icon={FiStar}
-          label={upgrading ? 'Actualizando...' : 'Actualizar a plan Premium'}
-          onClick={upgradePlan}
-          disabled={upgrading}
-          aria-busy={upgrading}
-        />
-      )}
+      <PlanUpgrade />
     </div>
   );
 };

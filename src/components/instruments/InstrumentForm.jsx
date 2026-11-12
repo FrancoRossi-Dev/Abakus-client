@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from "react";
-import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
@@ -11,15 +10,10 @@ import {
   editInstrumentFormSchema,
 } from "../../validators/instrument.validators";
 import { INSTRUMENT_TYPES, INSTRUMENT_TYPE_LABELS } from "../../constants/constants";
-import {
-  updateInstrument,
-  invalidateInstruments,
-} from "../../features/instruments/instruments.slice";
 
 // Alta: la API solo recibe el ISIN y completa el resto con OpenFIGI.
 // Edición: se corrigen a mano nombre, tipo y ticker.
 const InstrumentForm = ({ instrument, onSuccess, onCancel }) => {
-  const dispatch = useDispatch();
   const isEditing = Boolean(instrument);
 
   const isinId = useId();
@@ -68,14 +62,9 @@ const InstrumentForm = ({ instrument, onSuccess, onCancel }) => {
         // La API exige issuerId cuando el tipo es stock o bond
         if (instrument.issuerId) payload.issuerId = instrument.issuerId;
 
-        const response = await backend.patch(`/instrument/${instrument._id}`, payload);
-
-        dispatch(updateInstrument(response.data.instrument ?? { ...instrument, ...payload }));
+        await backend.patch(`/instrument/${instrument._id}`, payload);
       } else {
         await backend.post("/instrument", data);
-
-        // El nuevo instrumento corre a todos un lugar: descarta la caché de páginas
-        dispatch(invalidateInstruments());
       }
 
       onSuccess({ created: !instrument });

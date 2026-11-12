@@ -1,9 +1,11 @@
 import { useId, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { FiPlus, FiSearch, FiX } from 'react-icons/fi';
 import DataTable from '../shared/table/DataTable';
 import EditButton from '../shared/button/EditButton';
+import DeleteButton from '../shared/button/DeleteButton';
 import Button from '../shared/button/Button';
+import { normalizeText } from '../../utils/format';
 import './ClientTable.css';
 
 const EMPTY_VALUE = '—';
@@ -15,24 +17,17 @@ const buildManagerNames = (managers) =>
 const countActiveAccounts = (client) =>
   client.bankAccounts.filter((account) => !account.isDeleted).length;
 
-// Búsqueda sin distinguir mayúsculas ni tildes ("Peru" encuentra "Perú")
-const normalize = (text = '') =>
-  text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim();
 
 const compareText = (a, b) => (a || '').localeCompare(b || '', 'es', { sensitivity: 'base' });
 
-// selectedClientId / onSelect (opcionales): resaltan el cliente elegido en la lista
-const ClientTable = ({ clients, managers, onCreate, selectedClientId, onSelect }) => {
+// onEdit / onDelete reciben el cliente completo; deletingId deshabilita las acciones durante una baja
+const ClientTable = ({ clients, managers, onCreate, onEdit, onDelete, deletingId = null }) => {
   const searchId = useId();
-  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState({ key: 'commercialName', direction: 'asc' });
 
   const managerNames = useMemo(() => buildManagerNames(managers), [managers]);
+  const clientsById = useMemo(() => new Map(clients.map((client) => [client._id, client])), [clients]);
 
   // Filas con los valores ya resueltos: así búsqueda y orden usan el dato real, no lo que se muestra
   const rows = useMemo(
@@ -49,13 +44,13 @@ const ClientTable = ({ clients, managers, onCreate, selectedClientId, onSelect }
   );
 
   const visibleRows = useMemo(() => {
-    const term = normalize(query);
+    const term = normalizeText(query);
 
     const filtered =
       term ?
         rows.filter((row) =>
           [row.commercialName, row.legalName, row.country, row.manager].some((value) =>
-            normalize(value).includes(term),
+            normalizeText(value).includes(term),
           ),
         )
       : rows;
@@ -85,7 +80,13 @@ const ClientTable = ({ clients, managers, onCreate, selectedClientId, onSelect }
       sortable: true,
       render: (row) => (
         <div className='client-table__identity'>
-          <span className='client-table__name'>{row.commercialName}</span>
+          {/* El detalle tiene lo que no entra en la edición rápida: cuentas bancarias y logo */}
+          <Link
+            to={`/clients/${row._id}`}
+            className='client-table__name'
+            title='Ver cuentas bancarias y logo del cliente'>
+            {row.commercialName}
+          </Link>
           <span className='client-table__legal'>{row.legalName}</span>
         </div>
       ),
@@ -182,11 +183,25 @@ const ClientTable = ({ clients, managers, onCreate, selectedClientId, onSelect }
         data={visibleRows}
         sort={sort}
         onSort={handleSort}
-        selectedKey={selectedClientId}
-        onRowSelect={onSelect && ((row) => onSelect(row._id))}
-        renderActions={(row) => (
-          <EditButton onClick={() => navigate(`/clients/${row._id}`)}>Gestionar</EditButton>
-        )}
+        renderActions={(row) => {
+          const client = clientsById.get(row._id);
+          const disabled = deletingId !== null;
+          return (
+            <>
+              <EditButton
+                onClick={() => onEdit(client)}
+                disabled={disabled}
+                aria-label={`Editar ${row.commercialName}`}
+              />
+              <DeleteButton
+                onClick={() => onDelete(client)}
+                disabled={disabled}
+                aria-label={`Eliminar ${row.commercialName}`}>
+                {deletingId === row._id ? 'Eliminando...' : 'Eliminar'}
+              </DeleteButton>
+            </>
+          );
+        }}
         itemLabel='clientes'
         emptyMessage={noResults}
       />

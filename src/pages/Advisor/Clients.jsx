@@ -1,45 +1,88 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FiPlus, FiUpload } from 'react-icons/fi';
 import backend from '../../api/backend';
+import { getAllPages } from '../../api/getAllPages';
 import ClientTable from '../../components/clients/ClientTable';
 import ClientForm from '../../components/clients/ClientForm';
 import PositionImportForm from '../../components/positions/PositionImportForm';
 import Modal from '../../components/shared/modal/Modal';
 import Button from '../../components/shared/button/Button';
 import FormAlert from '../../components/shared/form/FormAlert';
+import LoadingState from '../../components/shared/page/LoadingState';
+import ErrorState from '../../components/shared/page/ErrorState';
+import {
+  clientRemoved,
+  clientSaved,
+  selectClients,
+  setClients,
+} from '../../features/clients/clients.slice';
+import { selectCanAddClient, selectPlan, setPlan } from '../../features/account/account.slice';
 
-// para tener todos los clientes, managers y bancos en una sola página.
-const ALL_ITEMS = { params: { limit: 100 } };
+const PLAN_NAMES = { base: 'Base', premium: 'Premium' };
+
+// La API responde en inglés: los errores esperables al borrar se traducen por código de estado
+const DELETE_ERRORS = {
+  404: 'El cliente ya no existe.',
+  409: 'El cliente todavía tiene cuentas bancarias activas. Eliminalas antes de borrar al cliente.',
+};
 
 const Clients = () => {
-  // estados de carga
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  // datos de usuario, evaluar si los necesitamos en otro lado -> pasar a redux
-  const [clients, setClients] = useState([]);
+  const dispatch = useDispatch();
+
+  // Clientes y plan viven en Redux: los comparten Detalle, Reportes, Inicio y Mi plan
+  const clients = useSelector(selectClients);
+  const plan = useSelector(selectPlan);
+  const canAddClient = useSelector(selectCanAddClient);
+
+  // Bancos y managers solo se usan acá para completar los formularios
   const [banks, setBanks] = useState([]);
   const [managers, setManagers] = useState([]);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
   const [showImportForm, setShowImportForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
+  // cliente que se está editando en el modal (null: modal cerrado)
+  const [editingClient, setEditingClient] = useState(null);
 
   // Cambiarlo vuelve a disparar la carga (botón "Reintentar")
   const [reloadKey, setReloadKey] = useState(0);
 
+  // El uso del plan cambia al registrar o borrar clientes: se vuelve a pedir
+  const refreshPlan = async () => {
+    try {
+      const { data } = await backend.get('/user/me/plan');
+      dispatch(setPlan(data));
+    } catch {
+      // sin el plan se deja registrar igual: la API vuelve a controlar el límite
+    }
+  };
+
   useEffect(() => {
+    // El plan va aparte: si falla, la cartera se muestra igual
+    const fetchPlan = async () => {
+      try {
+        const { data } = await backend.get('/user/me/plan');
+        dispatch(setPlan(data));
+      } catch {
+        // sin el plan se deja registrar igual: la API vuelve a controlar el límite
+      }
+    };
+
     const fetchData = async () => {
       try {
         // el backend devuelve solo los clientes y managers del advisor logueado (sale del token)
-        // las listas vienen paginadas: { data, total, page, limit, pages }
-        const [clientsRes, banksRes, managersRes] = await Promise.all([
-          backend.get('/client', ALL_ITEMS),
-          backend.get('/bank', ALL_ITEMS),
-          backend.get('/manager', ALL_ITEMS),
+        const [clientList, banksRes, managersRes] = await Promise.all([
+          getAllPages('/client'),
+          backend.get('/bank', { params: { limit: 100 } }),
+          backend.get('/manager', { params: { limit: 100 } }),
         ]);
-        setClients(clientsRes.data.data);
+        dispatch(setClients(clientList));
         setBanks(banksRes.data.data);
         setManagers(managersRes.data.data);
       } catch (err) {
@@ -49,21 +92,14 @@ const Clients = () => {
       }
     };
 
+    fetchPlan();
     fetchData();
-  }, [reloadKey]);
+  }, [dispatch, reloadKey]);
 
   const handleRetry = () => {
     setIsLoading(true);
     setError(null);
     setReloadKey((key) => key + 1);
-  };
-
-  const handleOpenImport = () => {
-    setShowImportForm(true);
-  };
-
-  const handleCloseImport = () => {
-    setShowImportForm(false);
   };
 
   const handleImportSuccess = ({ count, clientCount }) => {
@@ -73,24 +109,46 @@ const Clients = () => {
     );
   };
 
-  const handleOpenClientForm = () => {
-    setShowClientForm(true);
-  };
-
-  const handleCloseClientForm = () => {
-    setShowClientForm(false);
-  };
-
   // La API solo devuelve el id del cliente nuevo: se recarga la lista para mostrarlo
-  const handleClientSuccess = async () => {
+  const handleClientCreated = async () => {
     setShowClientForm(false);
     toast.success('Cliente registrado.');
+    refreshPlan();
 
     try {
-      const clientsRes = await backend.get('/client', ALL_ITEMS);
-      setClients(clientsRes.data.data);
+      dispatch(setClients(await getAllPages('/client')));
     } catch (err) {
       toast.error(err.userMessage || 'No se pudo actualizar la lista de clientes.');
+    }
+  };
+
+  const handleClientEdited = (updated) => {
+    dispatch(clientSaved(updated));
+    setEditingClient(null);
+    toast.success('Cliente actualizado.');
+  };
+
+  const handleDelete = async (client) => {
+    const { commercialName } = client.clientDetails;
+    const confirmed = window.confirm(
+      `¿Querés eliminar a ${commercialName}? Dejará de aparecer en tu cartera y en los reportes.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(client._id);
+    try {
+      await backend.delete(`/client/${client._id}`);
+      // Se saca de la lista solo cuando la API confirmó la baja
+      dispatch(clientRemoved(client._id));
+      toast.success(`${commercialName} fue eliminado.`);
+      // libera un lugar del plan
+      refreshPlan();
+    } catch (err) {
+      toast.error(
+        DELETE_ERRORS[err.response?.status] || err.userMessage || 'No se pudo eliminar el cliente.',
+      );
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -113,30 +171,32 @@ const Clients = () => {
               type='secondary'
               icon={FiPlus}
               label='Registrar cliente'
-              onClick={handleOpenClientForm}
+              onClick={() => setShowClientForm(true)}
+              disabled={!canAddClient}
+              title={canAddClient ? undefined : 'Llegaste al límite de clientes de tu plan'}
             />
             <Button
               type='primary'
               icon={FiUpload}
               label='Importar posiciones'
-              onClick={handleOpenImport}
+              onClick={() => setShowImportForm(true)}
             />
           </div>
         )}
       </header>
 
-      {isLoading && (
-        <div className='page-status' role='status'>
-          <FontAwesomeIcon icon={faSpinner} spin className='page-status__spinner' />
-          <span>Cargando clientes...</span>
-        </div>
-      )}
+      {isLoading && <LoadingState label='Cargando clientes...' />}
+      {!isLoading && error && <ErrorState message={error} onRetry={handleRetry} />}
 
-      {!isLoading && error && (
-        <div className='page-error'>
-          <FormAlert title='No se pudo cargar la página'>{error}</FormAlert>
-          <Button type='secondary' label='Reintentar' onClick={handleRetry} />
-        </div>
+      {/* El alta solo se permite si la cantidad de clientes del plan lo permite */}
+      {isReady && !canAddClient && (
+        <FormAlert tone='warning' title='Llegaste al límite de tu plan'>
+          <p>
+            Tu plan {PLAN_NAMES[plan.planTier] ?? plan.planTier} permite hasta {plan.limit} clientes
+            activos y ya tenés {plan.clientsRegistered}. Para registrar más,{' '}
+            <Link to='/upgrade'>pasate al plan Premium</Link> o eliminá un cliente que ya no gestiones.
+          </p>
+        </FormAlert>
       )}
 
       {/* tabla con datos de cliente */}
@@ -144,32 +204,53 @@ const Clients = () => {
         <ClientTable
           clients={clients}
           managers={managers}
-          onCreate={handleOpenClientForm}
+          onCreate={canAddClient ? () => setShowClientForm(true) : undefined}
+          onEdit={setEditingClient}
+          onDelete={handleDelete}
+          deletingId={deletingId}
         />
       )}
 
       {/* Modal de alta de cliente */}
       <Modal
         isOpen={showClientForm}
-        onClose={handleCloseClientForm}
+        onClose={() => setShowClientForm(false)}
         title='Registrar cliente'
         size='lg'>
         <ClientForm
           managers={managers}
           banks={banks}
-          onSuccess={handleClientSuccess}
-          onCancel={handleCloseClientForm}
+          onSuccess={handleClientCreated}
+          onCancel={() => setShowClientForm(false)}
         />
       </Modal>
 
+      {/* Modal de edición rápida: datos y manager (las cuentas se gestionan en el detalle) */}
+      <Modal
+        isOpen={editingClient !== null}
+        onClose={() => setEditingClient(null)}
+        title={`Editar ${editingClient?.clientDetails.commercialName ?? 'cliente'}`}
+        size='lg'>
+        {editingClient && (
+          <ClientForm
+            key={editingClient._id}
+            client={editingClient}
+            managers={managers}
+            banks={banks}
+            onSuccess={handleClientEdited}
+            onCancel={() => setEditingClient(null)}
+          />
+        )}
+      </Modal>
+
       {/* Modal de importación: el reporte del banco trae varios clientes, se asocian al leerlo */}
-      <Modal isOpen={showImportForm} onClose={handleCloseImport} title='Importar posiciones'>
+      <Modal isOpen={showImportForm} onClose={() => setShowImportForm(false)} title='Importar posiciones'>
         {showImportForm && (
           <PositionImportForm
             clients={clients}
             banks={banks}
             onSuccess={handleImportSuccess}
-            onCancel={handleCloseImport}
+            onCancel={() => setShowImportForm(false)}
           />
         )}
       </Modal>

@@ -55,26 +55,6 @@ th[data-align='end'] .data-table__sort {
   cursor: progress;
 }
 
-/* Filas seleccionables: toda la fila es clickeable; la elegida queda resaltada */
-.data-table__row--selectable {
-  cursor: pointer;
-}
-
-.data-table__row--selectable:hover {
-  background: var(--color-surface-hover);
-}
-
-.data-table__row--selected,
-.data-table__row--selected:hover {
-  background: var(--color-surface-selected);
-}
-
-
-.data-table__row--selectable:focus-visible {
-  outline: 2px solid var(--color-action-primary);
-  outline-offset: -2px;
-}
-
 /* Botones de la columna "Acciones": en línea, con poco espacio entre sí */
 .data-table__actions {
   display: flex;

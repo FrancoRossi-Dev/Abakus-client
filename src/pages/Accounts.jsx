@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiStar } from 'react-icons/fi';
 import backend from '../api/backend';
+import { selectUser, setUser } from '../features/account/account.slice';
 import PageHeader from '../components/shared/page/PageHeader';
 import LoadingState from '../components/shared/page/LoadingState';
 import ErrorState from '../components/shared/page/ErrorState';
@@ -23,20 +25,22 @@ const DETAIL_FIELDS = [
 const Value = ({ children }) => children || <span className='cell-muted'>Sin dato</span>;
 
 const Accounts = () => {
-  const [user, setUser] = useState(null);
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
 
+  // Se vuelve a pedir al entrar para mostrar los datos al día (ej. el plan después de un cambio)
   useEffect(() => {
     let ignore = false;
     backend
       .get('/user/me')
-      .then(({ data }) => !ignore && setUser(data))
+      .then(({ data }) => !ignore && dispatch(setUser(data)))
       .catch((err) => !ignore && setError(err.userMessage || 'No se pudieron cargar tus datos.'));
     return () => {
       ignore = true;
     };
-  }, [reloadKey]);
+  }, [dispatch, reloadKey]);
 
   const handleRetry = () => {
     setError('');

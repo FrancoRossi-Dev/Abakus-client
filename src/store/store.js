@@ -1,22 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
-import clientsReducer from "../features/clients/clients.store";
-import managersReducer from "../features/managers/managers.slice";
-import banksReducer from "../features/banks/banks.slice";
-import issuersReducer from "../features/issuers/issuers.slice";
-import instrumentsReducer from "../features/instruments/instruments.slice";
-import advisorsReducer from "../features/advisors/advisors.slice";
-import reportsReducer from "../features/reports/reports.slice";
-import newsAnalysisReducer, { persistNewsAnalysis } from "../features/reports/newsAnalysis.slice";
+import clientsReducer from '../features/clients/clients.slice';
+import accountReducer from '../features/account/account.slice';
+import newsAnalysisReducer, { persistNewsAnalysis } from '../features/reports/newsAnalysis.slice';
 
+// Solo va a Redux lo que comparten varias páginas:
+// - clients: la cartera (Clientes, Detalle, Reportes)
+// - account: el usuario y su plan (Inicio, Mi cuenta, Mi plan, Clientes)
+// - newsAnalysis: el análisis con IA de cada cliente, guardado por el resto del día
 const store = configureStore({
   reducer: {
-    client: clientsReducer,
-    managers: managersReducer,
-    banks: banksReducer,
-    issuers: issuersReducer,
-    instruments: instrumentsReducer,
-    advisors: advisorsReducer,
-    reports: reportsReducer,
+    clients: clientsReducer,
+    account: accountReducer,
     newsAnalysis: newsAnalysisReducer,
   },
 });

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiArrowRight } from 'react-icons/fi';
 import backend from '../api/backend';
 import { getRole } from '../utils/utils';
+import { selectUser, setPlan, setUser } from '../features/account/account.slice';
 import './Home.css';
 
 const PLAN_NAMES = { base: 'Base', premium: 'Premium' };
@@ -20,10 +22,12 @@ const countOf = (endpoint) =>
 // Cada estadística se resuelve por separado: si una falla, se muestra "—" y el resto sigue
 const settle = (results) => results.map((result) => (result.status === 'fulfilled' ? result.value : null));
 
-const loadAdvisorStats = async () => {
+// El advisor ve el uso de su plan (que también se guarda en Redux) y cuántos managers tiene
+const loadAdvisorStats = async (dispatch) => {
   const [plan, managers] = settle(
     await Promise.allSettled([backend.get('/user/me/plan').then(({ data }) => data), countOf('/manager')]),
   );
+  if (plan) dispatch(setPlan(plan));
 
   const limit = plan?.limit ?? null;
   const planName = plan ? (PLAN_NAMES[plan.planTier] ?? plan.planTier) : null;
@@ -107,8 +111,12 @@ const StatSkeleton = () => (
 const Home = () => {
   const role = getRole();
   const isAdmin = role === 'admin';
+  const dispatch = useDispatch();
 
-  const [name, setName] = useState('');
+  // El usuario vive en Redux (lo comparten Mi cuenta y Mi plan); si falla, el saludo va sin nombre
+  const user = useSelector(selectUser);
+  const name = user?.details?.comercialName || user?.username || '';
+
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -116,17 +124,17 @@ const Home = () => {
 
     backend
       .get('/user/me')
-      .then(({ data: user }) => !ignore && setName(user.details?.comercialName || user.username || ''))
+      .then(({ data: me }) => !ignore && dispatch(setUser(me)))
       .catch(() => {
         // el saludo funciona igual sin nombre
       });
 
-    (isAdmin ? loadAdminStats() : loadAdvisorStats()).then((result) => !ignore && setData(result));
+    (isAdmin ? loadAdminStats() : loadAdvisorStats(dispatch)).then((result) => !ignore && setData(result));
 
     return () => {
       ignore = true;
     };
-  }, [isAdmin]);
+  }, [dispatch, isAdmin]);
 
   const today = dateFormatter.format(new Date());
   const skeletonCount = isAdmin ? 5 : 4;

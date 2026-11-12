@@ -38,24 +38,6 @@ const shouldRetry = (error) => {
   return (config.retryCount ?? 0) < RETRY_DELAYS_MS.length;
 };
 
-// Espera antes de reintentar; si el componente cancela el pedido mientras tanto, corta
-const wait = (ms, signal) =>
-  new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new axios.CanceledError());
-      return;
-    }
-    const timer = setTimeout(() => {
-      signal?.removeEventListener('abort', onAbort);
-      resolve();
-    }, ms);
-    const onAbort = () => {
-      clearTimeout(timer);
-      reject(new axios.CanceledError());
-    };
-    signal?.addEventListener('abort', onAbort, { once: true });
-  });
-
 // Para las respuestas, este interceptor maneja los errores
 backend.interceptors.response.use(
   (response) => response,
@@ -64,7 +46,8 @@ backend.interceptors.response.use(
       const { config } = error;
       const attempt = config.retryCount ?? 0;
       config.retryCount = attempt + 1;
-      await wait(RETRY_DELAYS_MS[attempt], config.signal);
+      // espera 1 s (y después 2 s) antes de repetir el mismo pedido
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]));
       return backend(config);
     }
 

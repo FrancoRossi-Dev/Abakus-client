@@ -4,7 +4,6 @@ import { getToken, getRole } from '../../utils/utils';
 const AuthWrapper = ({allowedRoles}) => {
   const isAuth = getToken();
   const location = useLocation();
-  // @TODO cambiar
 
   if (!isAuth) {
     return <Navigate to='/login' replace state={{ from: location }} />;

@@ -1,16 +1,19 @@
 import { useId, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { loginSchema } from '../../validators/auth.validators';
 import backend from '../../api/backend';
 import { setToken } from '../../utils/utils';
+import { setUser } from '../../features/account/account.slice';
 import FormField from '../shared/form/FormField';
 import FormAlert from '../shared/form/FormAlert';
 import '../shared/button/Button.css';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const formId = useId();
   const hintId = `${formId}-submit-hint`;
   const [error, setError] = useState('');
@@ -36,6 +39,7 @@ const LoginForm = () => {
       const response = await backend.post('/auth/login', data);
 
       setToken(response.data.token);
+      dispatch(setUser(response.data.user));
       navigate('/');
     } catch (error) {
       setError(

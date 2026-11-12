@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from "react";
-import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
@@ -7,11 +6,8 @@ import FormField from "../shared/form/FormField";
 import FormAlert from "../shared/form/FormAlert";
 import Button from "../shared/button/Button";
 import { createIssuerSchema } from "../../validators/issuer.validators";
-import { updateIssuer, invalidateIssuers } from "../../features/issuers/issuers.slice";
 
 const IssuerForm = ({ issuer, onSuccess, onCancel }) => {
-  const dispatch = useDispatch();
-
   const commercialNameId = useId();
   const legalNameId = useId();
   const addressId = useId();
@@ -52,13 +48,8 @@ const IssuerForm = ({ issuer, onSuccess, onCancel }) => {
       // El token lo agrega el interceptor de backend.js
       if (issuer) {
         await backend.patch(`/issuer/${issuer._id}`, data);
-
-        dispatch(updateIssuer({ ...issuer, ...data }));
       } else {
         await backend.post("/issuer", data);
-
-        // El nuevo emisor corre a todos un lugar: descarta la caché de páginas
-        dispatch(invalidateIssuers());
       }
 
       onSuccess({ created: !issuer });

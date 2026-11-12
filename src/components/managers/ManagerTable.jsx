@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import backend from '../../api/backend';
 import PaginatedTable from '../shared/table/PaginatedTable';
 import EditButton from '../shared/button/EditButton';
 import DeleteButton from '../shared/button/DeleteButton';
 import { getRole } from '../../utils/utils';
-import {
-  managersActions,
-  invalidateManagers,
-  selectManagers,
-} from '../../features/managers/managers.slice';
 
 const baseColumns = [
   { key: 'fullName', header: 'Nombre completo' },
@@ -23,9 +17,7 @@ const firmColumn = {
   render: (manager) => manager.advisor?.details?.comercialName ?? '—',
 };
 
-const ManagerTable = ({ onEdit }) => {
-  const dispatch = useDispatch();
-
+const ManagerTable = ({ list, onEdit, onDeleted }) => {
   // si el usuario es administrador, se muestra a que firma pertenecen los managers
   const columns = getRole() === 'admin' ? [...baseColumns, firmColumn] : baseColumns;
 
@@ -47,10 +39,8 @@ const ManagerTable = ({ onEdit }) => {
       // El token lo agrega el interceptor de backend.js
       await backend.delete(`/manager/${manager._id}`);
 
-      // Actualiza solamente si el backend confirmo la baja.
-      // Las páginas siguientes se corren un lugar: descarta la caché y
-      // recarga la actual para completar el hueco con el siguiente manager
-      dispatch(invalidateManagers());
+      // La página recarga el listado: los items de las páginas siguientes se corren un lugar
+      onDeleted();
     } catch (error) {
       setError(error.userMessage || 'No se pudo eliminar el manager.');
     } finally {
@@ -76,10 +66,7 @@ const ManagerTable = ({ onEdit }) => {
     <PaginatedTable
       title='Listado de managers'
       actionError={error}
-      endpoint='/manager'
-      selectState={selectManagers}
-      actions={managersActions}
-      pageSize={15}
+      list={list}
       columns={columns}
       itemLabel='managers'
       renderActions={renderActions}

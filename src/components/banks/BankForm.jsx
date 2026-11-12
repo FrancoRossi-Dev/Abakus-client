@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from "react";
-import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
@@ -7,11 +6,8 @@ import FormField from "../shared/form/FormField";
 import FormAlert from "../shared/form/FormAlert";
 import Button from "../shared/button/Button";
 import { createBankSchema } from "../../validators/bank.validators";
-import { updateBank, invalidateBanks } from "../../features/banks/banks.slice";
 
 const BankForm = ({ bank, onSuccess, onCancel }) => {
-  const dispatch = useDispatch();
-
   const nameId = useId();
   const countryId = useId();
   const regionId = useId();
@@ -49,13 +45,8 @@ const BankForm = ({ bank, onSuccess, onCancel }) => {
       // El token lo agrega el interceptor de backend.js
       if (bank) {
         await backend.patch(`/bank/${bank._id}`, data);
-
-        dispatch(updateBank({ ...bank, ...data }));
       } else {
         await backend.post("/bank", data);
-
-        // El nuevo banco corre a todos un lugar: descarta la caché de páginas
-        dispatch(invalidateBanks());
       }
 
       onSuccess({ created: !bank });

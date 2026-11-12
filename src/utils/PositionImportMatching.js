@@ -1,17 +1,13 @@
 // Asociación de las filas de un reporte de banco con los clientes y cuentas del servidor.
 // Sin React: recibe datos y devuelve datos, así la lógica se lee (y prueba) aparte del formulario.
 
+import { normalizeText } from './format';
+
 // Valor del desplegable para dejar afuera las filas de un cliente o cuenta
 export const SKIP = 'skip';
 
 // Compara sin distinguir mayúsculas, tildes ni espacios de más ("Jose  Pérez" = "josé perez")
-export const normalizeName = (text = '') =>
-  String(text)
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/\s+/g, ' ')
-    .toLowerCase()
-    .trim();
+export const normalizeName = (text = '') => normalizeText(text).replace(/\s+/g, ' ');
 
 const activeAccounts = (client) => client.bankAccounts.filter((account) => !account.isDeleted);
 

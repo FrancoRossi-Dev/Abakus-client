@@ -64,6 +64,13 @@
 .client-table__name {
   font: var(--type-body-strong);
   color: var(--color-text);
+  text-decoration: none;
+}
+
+.client-table__name:hover,
+.client-table__name:focus-visible {
+  color: var(--color-action-primary);
+  text-decoration: underline;
 }
 
 .client-table__legal {

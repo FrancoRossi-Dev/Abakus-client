@@ -1,5 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import backend from '../../api/backend';
+import { createSlice } from '@reduxjs/toolkit';
 
 /*
  * Caché del análisis de noticias con IA, por cliente y por día.
@@ -9,6 +8,7 @@ import backend from '../../api/backend';
  * también en localStorage, para que una recarga de la página no vuelva a pedirlo.
  * Al cambiar el día, el análisis guardado deja de valer y se puede generar uno nuevo.
  * Los errores no se guardan: se puede reintentar enseguida.
+ * El pedido a la API lo hace NewsAnalysis.jsx; acá solo se guarda el estado de cada cliente.
  */
 
 export const NEWS_ANALYSIS_STORAGE_KEY = 'abakus-news-analysis';
@@ -44,73 +44,24 @@ const saveStored = (byClient) => {
   }
 };
 
-// La API responde en inglés: se traduce por código de estado para mostrarlo al usuario
-const ERROR_MESSAGES = {
-  404: 'Este cliente no tiene posiciones informadas en los últimos 30 días.',
-  429: 'Se alcanzó el límite de análisis con IA. Probá de nuevo en unos minutos.',
-  503: 'El servicio de análisis con IA no está disponible en este momento. Probá más tarde.',
-};
-
-const isFreshToday = (entry) => entry?.status === 'succeeded' && entry.day === getToday();
-
-export const fetchNewsAnalysis = createAsyncThunk(
-  'newsAnalysis/fetch',
-  async ({ clientId }, { rejectWithValue }) => {
-    try {
-      const { data } = await backend.get(`/report/client/${clientId}/news`, {
-        params: { lang: 'es' },
-        // la API espera hasta ~2 minutos a la IA (60 s + un reintento)
-        timeout: 150_000,
-        // sin reintento automático: una falla de red puede llegar después de que la IA ya
-        // procesó el pedido, y repetirlo gastaría otra consulta del cupo
-        retry: false,
-      });
-      return { generatedAt: data.date, report: data.data };
-    } catch (err) {
-      const status = err.response?.status;
-      return rejectWithValue(
-        ERROR_MESSAGES[status] ||
-          (err.code === 'ECONNABORTED' ?
-            'El análisis tardó demasiado en responder. Probá de nuevo.'
-          : err.userMessage || 'No se pudo generar el análisis.'),
-      );
-    }
-  },
-  {
-    // No se vuelve a llamar a la IA si ya hay un análisis de hoy o uno en curso
-    condition: ({ clientId }, { getState }) => {
-      const entry = getState().newsAnalysis.byClient[clientId];
-      return entry?.status !== 'loading' && !isFreshToday(entry);
-    },
-  },
-);
-
 const newsAnalysisSlice = createSlice({
   name: 'newsAnalysis',
   initialState: () => ({ byClient: loadStored() }),
   reducers: {
+    analysisStarted: (state, action) => {
+      state.byClient[action.payload.clientId] = { status: 'loading' };
+    },
+    // payload: { clientId, generatedAt, report }
+    analysisSucceeded: (state, action) => {
+      const { clientId, generatedAt, report } = action.payload;
+      state.byClient[clientId] = { status: 'succeeded', day: getToday(), generatedAt, report };
+    },
+    analysisFailed: (state, action) => {
+      state.byClient[action.payload.clientId] = { status: 'failed', error: action.payload.error };
+    },
     clearNewsAnalysis: (state) => {
       state.byClient = {};
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchNewsAnalysis.pending, (state, action) => {
-        state.byClient[action.meta.arg.clientId] = { status: 'loading' };
-      })
-      .addCase(fetchNewsAnalysis.fulfilled, (state, action) => {
-        state.byClient[action.meta.arg.clientId] = {
-          status: 'succeeded',
-          day: getToday(),
-          ...action.payload,
-        };
-      })
-      .addCase(fetchNewsAnalysis.rejected, (state, action) => {
-        state.byClient[action.meta.arg.clientId] = {
-          status: 'failed',
-          error: action.payload ?? 'No se pudo generar el análisis.',
-        };
-      });
   },
 });
 
@@ -133,5 +84,6 @@ export const selectNewsAnalysis = (clientId) => (state) => {
   return entry;
 };
 
-export const { clearNewsAnalysis } = newsAnalysisSlice.actions;
+export const { analysisStarted, analysisSucceeded, analysisFailed, clearNewsAnalysis } =
+  newsAnalysisSlice.actions;
 export default newsAnalysisSlice.reducer;

@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from "react";
-import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import backend from "../../api/backend";
@@ -12,7 +11,6 @@ import {
   createAdvisorFormSchema,
   editAdvisorFormSchema,
 } from "../../validators/advisor.validators";
-import { updateAdvisor, invalidateAdvisors } from "../../features/advisors/advisors.slice";
 
 const PLAN_LABELS = { base: "Base", premium: "Premium" };
 
@@ -37,7 +35,6 @@ const toFormValues = (advisor) => ({
 });
 
 const AdvisorForm = ({ advisor, onSuccess, onCancel }) => {
-  const dispatch = useDispatch();
   const isEditing = Boolean(advisor);
 
   const idPrefix = useId();
@@ -72,14 +69,9 @@ const AdvisorForm = ({ advisor, onSuccess, onCancel }) => {
     try {
       // El token lo agrega el interceptor de backend.js
       if (advisor) {
-        const response = await backend.patch(`/user/advisors/${advisor._id}`, payload);
-
-        dispatch(updateAdvisor(response.data.advisor));
+        await backend.patch(`/user/advisors/${advisor._id}`, payload);
       } else {
         await backend.post("/user/advisors", payload);
-
-        // El nuevo advisor corre a todos un lugar: descarta la caché de páginas
-        dispatch(invalidateAdvisors());
       }
 
       onSuccess({ created: !advisor });

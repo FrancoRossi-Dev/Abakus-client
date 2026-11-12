@@ -1,14 +1,8 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import backend from '../../api/backend';
 import PaginatedTable from '../shared/table/PaginatedTable';
 import EditButton from '../shared/button/EditButton';
 import DeleteButton from '../shared/button/DeleteButton';
-import {
-  advisorsActions,
-  invalidateAdvisors,
-  selectAdvisors,
-} from '../../features/advisors/advisors.slice';
 
 const PLAN_LABELS = { base: 'Base', premium: 'Premium' };
 
@@ -45,9 +39,7 @@ const columns = [
   },
 ];
 
-const AdvisorTable = ({ onEdit }) => {
-  const dispatch = useDispatch();
-
+const AdvisorTable = ({ list, onEdit, onDeleted }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
 
@@ -68,8 +60,8 @@ const AdvisorTable = ({ onEdit }) => {
       // La API rechaza la baja (409) si el advisor todavía tiene clientes o managers activos.
       await backend.delete(`/user/advisors/${advisor._id}`);
 
-      // Las páginas siguientes se corren un lugar: descarta la caché y recarga la actual
-      dispatch(invalidateAdvisors());
+      // La página recarga el listado: los items de las páginas siguientes se corren un lugar
+      onDeleted();
     } catch (error) {
       setError(error.userMessage || 'No se pudo eliminar el advisor.');
     } finally {
@@ -95,10 +87,7 @@ const AdvisorTable = ({ onEdit }) => {
     <PaginatedTable
       title='Advisors registrados'
       actionError={error}
-      endpoint='/user/advisors'
-      selectState={selectAdvisors}
-      actions={advisorsActions}
-      pageSize={15}
+      list={list}
       columns={columns}
       itemLabel='advisors'
       renderActions={renderActions}

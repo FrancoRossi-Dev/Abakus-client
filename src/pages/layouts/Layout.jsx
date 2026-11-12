@@ -14,12 +14,9 @@ import {
 import { MdOutlineAccountBalance } from "react-icons/md";
 import Logo from "../../components/brand/Logo";
 import ThemeToggle from "../../components/shared/theme/ThemeToggle";
-import { clearManagers } from "../../features/managers/managers.slice";
-import { clearBanks } from "../../features/banks/banks.slice";
-import { clearIssuers } from "../../features/issuers/issuers.slice";
-import { clearInstruments } from "../../features/instruments/instruments.slice";
-import { clearAdvisors } from "../../features/advisors/advisors.slice";
 import { clearNewsAnalysis } from "../../features/reports/newsAnalysis.slice";
+import { clearClients } from "../../features/clients/clients.slice";
+import { clearAccount } from "../../features/account/account.slice";
 import "./Layout.css";
 import { getRole, logout } from "../../utils/utils";
 
@@ -53,12 +50,9 @@ const Layout = () => {
 
   const handleLogout = () => {
     logout();
-    // esto es para borrar el cache
-    dispatch(clearManagers());
-    dispatch(clearBanks());
-    dispatch(clearIssuers());
-    dispatch(clearInstruments());
-    dispatch(clearAdvisors());
+    // Vacía todo el estado global: el próximo usuario no ve datos del anterior
+    dispatch(clearAccount());
+    dispatch(clearClients());
     dispatch(clearNewsAnalysis());
     navigate("/login", { replace: true });
   };

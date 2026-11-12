@@ -1,14 +1,8 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import backend from '../../api/backend';
 import PaginatedTable from '../shared/table/PaginatedTable';
 import EditButton from '../shared/button/EditButton';
 import DeleteButton from '../shared/button/DeleteButton';
-import {
-  issuersActions,
-  invalidateIssuers,
-  selectIssuers,
-} from '../../features/issuers/issuers.slice';
 
 const columns = [
   { key: 'commercialName', header: 'Nombre comercial' },
@@ -17,9 +11,7 @@ const columns = [
   { key: 'address', header: 'Dirección', render: (issuer) => issuer.address || '—' },
 ];
 
-const IssuerTable = ({ onEdit }) => {
-  const dispatch = useDispatch();
-
+const IssuerTable = ({ list, onEdit, onDeleted }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
 
@@ -38,8 +30,8 @@ const IssuerTable = ({ onEdit }) => {
       // El token lo agrega el interceptor de backend.js
       await backend.delete(`/issuer/${issuer._id}`);
 
-      // Las páginas siguientes se corren un lugar: descarta la caché y recarga la actual
-      dispatch(invalidateIssuers());
+      // La página recarga el listado: los items de las páginas siguientes se corren un lugar
+      onDeleted();
     } catch (error) {
       setError(error.userMessage || 'No se pudo eliminar el emisor.');
     } finally {
@@ -65,10 +57,7 @@ const IssuerTable = ({ onEdit }) => {
     <PaginatedTable
       title='Catálogo de emisores'
       actionError={error}
-      endpoint='/issuer'
-      selectState={selectIssuers}
-      actions={issuersActions}
-      pageSize={15}
+      list={list}
       columns={columns}
       itemLabel='emisores'
       renderActions={renderActions}

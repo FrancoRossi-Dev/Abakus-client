@@ -1,0 +1,6 @@
+.plan-upgrade__done {
+  padding: var(--space-stack-sm) var(--space-inline-lg);
+  color: var(--color-success);
+  background: var(--color-success-surface);
+  border-radius: var(--radius-control);
+}

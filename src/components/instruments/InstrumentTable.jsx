@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import backend from '../../api/backend';
 import { INSTRUMENT_TYPE_LABELS } from '../../constants/constants';
 import PaginatedTable from '../shared/table/PaginatedTable';
 import EditButton from '../shared/button/EditButton';
 import DeleteButton from '../shared/button/DeleteButton';
-import {
-  instrumentsActions,
-  invalidateInstruments,
-  selectInstruments,
-} from '../../features/instruments/instruments.slice';
 
 const columns = [
   { key: 'name', header: 'Nombre' },
@@ -23,9 +17,7 @@ const columns = [
   { key: 'exchCode', header: 'Mercado', render: (instrument) => instrument.exchCode || '—' },
 ];
 
-const InstrumentTable = ({ onEdit }) => {
-  const dispatch = useDispatch();
-
+const InstrumentTable = ({ list, onEdit, onDeleted }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
 
@@ -44,8 +36,8 @@ const InstrumentTable = ({ onEdit }) => {
       // El token lo agrega el interceptor de backend.js
       await backend.delete(`/instrument/${instrument._id}`);
 
-      // Las páginas siguientes se corren un lugar: descarta la caché y recarga la actual
-      dispatch(invalidateInstruments());
+      // La página recarga el listado: los items de las páginas siguientes se corren un lugar
+      onDeleted();
     } catch (error) {
       setError(error.userMessage || 'No se pudo eliminar el instrumento.');
     } finally {
@@ -71,10 +63,7 @@ const InstrumentTable = ({ onEdit }) => {
     <PaginatedTable
       title='Catálogo de instrumentos'
       actionError={error}
-      endpoint='/instrument'
-      selectState={selectInstruments}
-      actions={instrumentsActions}
-      pageSize={15}
+      list={list}
       columns={columns}
       itemLabel='instrumentos'
       renderActions={renderActions}

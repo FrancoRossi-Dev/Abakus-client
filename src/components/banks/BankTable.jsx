@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import backend from '../../api/backend';
 import PaginatedTable from '../shared/table/PaginatedTable';
 import EditButton from '../shared/button/EditButton';
 import DeleteButton from '../shared/button/DeleteButton';
-import { banksActions, invalidateBanks, selectBanks } from '../../features/banks/banks.slice';
 
 const columns = [
   {
@@ -17,9 +15,7 @@ const columns = [
   { key: 'region', header: 'Región' },
 ];
 
-const BankTable = ({ onEdit }) => {
-  const dispatch = useDispatch();
-
+const BankTable = ({ list, onEdit, onDeleted }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
 
@@ -38,8 +34,8 @@ const BankTable = ({ onEdit }) => {
       // El token lo agrega el interceptor de backend.js
       await backend.delete(`/bank/${bank._id}`);
 
-      // Las páginas siguientes se corren un lugar: descarta la caché y recarga la actual
-      dispatch(invalidateBanks());
+      // La página recarga el listado: los items de las páginas siguientes se corren un lugar
+      onDeleted();
     } catch (error) {
       setError(error.userMessage || 'No se pudo eliminar el banco.');
     } finally {
@@ -65,10 +61,7 @@ const BankTable = ({ onEdit }) => {
     <PaginatedTable
       title='Catálogo de bancos'
       actionError={error}
-      endpoint='/bank'
-      selectState={selectBanks}
-      actions={banksActions}
-      pageSize={15}
+      list={list}
       columns={columns}
       itemLabel='bancos'
       renderActions={renderActions}

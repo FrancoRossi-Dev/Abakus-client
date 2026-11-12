@@ -45,3 +45,12 @@ export const formatIsoDate = (isoDate) => {
 export const formatTime = (date) => (date ? timeFormatter.format(new Date(date)) : '—');
 
 export const formatDateTime = (date) => (date ? dateTimeFormatter.format(new Date(date)) : '—');
+
+// Texto para comparar sin distinguir mayúsculas ni tildes ("Perú" → "peru").
+// NFD separa cada letra de su tilde; el rango \u0300-\u036f son esas tildes sueltas, que se borran.
+export const normalizeText = (text = '') =>
+  String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();

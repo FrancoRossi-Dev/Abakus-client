@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FiArrowLeft, FiPlus } from 'react-icons/fi';
 import backend from '../../api/backend';
 import ClientForm from '../../components/clients/ClientForm';
@@ -14,16 +13,27 @@ import DataTable from '../../components/shared/table/DataTable';
 import Modal from '../../components/shared/modal/Modal';
 import Button from '../../components/shared/button/Button';
 import DeleteButton from '../../components/shared/button/DeleteButton';
-import FormAlert from '../../components/shared/form/FormAlert';
+import LoadingState from '../../components/shared/page/LoadingState';
+import ErrorState from '../../components/shared/page/ErrorState';
+import EmptyState from '../../components/shared/page/EmptyState';
+import { clientSaved } from '../../features/clients/clients.slice';
 
 const ALL_ITEMS = { params: { limit: 100 } };
 
 const ClientDetail = () => {
   const { clientId } = useParams();
+  const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [client, setClient] = useState(null);
+  const [client, setLocalClient] = useState(null);
+
+  // Cada cambio confirmado por la API se refleja también en la cartera de Redux,
+  // así el listado de clientes y los reportes no muestran datos viejos
+  const setClient = (updated) => {
+    setLocalClient(updated);
+    dispatch(clientSaved(updated));
+  };
   const [banks, setBanks] = useState([]);
   const [managers, setManagers] = useState([]);
 
@@ -41,7 +51,7 @@ const ClientDetail = () => {
           backend.get('/bank', ALL_ITEMS),
           backend.get('/manager', ALL_ITEMS),
         ]);
-        setClient(clientRes.data);
+        setLocalClient(clientRes.data);
         setBanks(banksRes.data.data);
         setManagers(managersRes.data.data);
       } catch (err) {
@@ -144,19 +154,8 @@ const ClientDetail = () => {
         {isReady && <ClientLogoUpload client={client} onUploaded={setClient} />}
       </header>
 
-      {isLoading && (
-        <div className='page-status' role='status'>
-          <FontAwesomeIcon icon={faSpinner} spin className='page-status__spinner' />
-          <span>Cargando cliente...</span>
-        </div>
-      )}
-
-      {!isLoading && error && (
-        <div className='page-error'>
-          <FormAlert title='No se pudo cargar la página'>{error}</FormAlert>
-          <Button type='secondary' label='Reintentar' onClick={handleRetry} />
-        </div>
-      )}
+      {isLoading && <LoadingState label='Cargando cliente...' />}
+      {!isLoading && error && <ErrorState message={error} onRetry={handleRetry} />}
 
       {isReady && (
         <>
@@ -189,12 +188,11 @@ const ClientDetail = () => {
               renderActions={renderAccountActions}
               itemLabel='cuentas'
               emptyMessage={
-                <div className='empty-state empty-state--compact'>
-                  <p className='empty-state__title'>Este cliente no tiene cuentas activas</p>
-                  <p className='empty-state__text'>
-                    Agregá una cuenta para poder importar sus posiciones.
-                  </p>
-                </div>
+                <EmptyState
+                  compact
+                  title='Este cliente no tiene cuentas activas'
+                  text='Agregá una cuenta para poder importar sus posiciones.'
+                />
               }
             />
           </section>

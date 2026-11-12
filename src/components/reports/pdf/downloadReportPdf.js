@@ -1,12 +1,10 @@
 import { createElement } from 'react';
 import { getToday } from '../../../features/reports/newsAnalysis.slice';
+import { normalizeText } from '../../../utils/format';
 
 // "Café & Cía. S.A." → "cafe-cia-s-a"
 const slugify = (text = '') =>
-  text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
+  normalizeText(text)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'cliente';
 
