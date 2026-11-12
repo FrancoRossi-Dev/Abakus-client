@@ -61,8 +61,6 @@ const Managers = () => {
         isOpen={showForm}
         onClose={handleClose}
         title={selectedManager ? 'Editar manager' : 'Agregar manager'}>
-        {/* el formulario se renderiza dentro del componente modal */}
-
         <ManagerForm manager={selectedManager} onSuccess={handleSuccess} onCancel={handleClose} />
       </Modal>
     </div>

@@ -1,24 +1,6 @@
 import Joi from "joi";
-import { paginationQuerySchema } from "./pagination.validators.js";
-import { filterId, filterText } from "./filter.validators.js";
-
-// Lowercased so ids compare equal to the ones the API returns
-export const clientParamsSchema = Joi.object({
-  clientId: Joi.string().hex().length(24).lowercase().required().messages({
-    "string.hex": "Client id is not valid.",
-    "string.length": "Client id is not valid.",
-    "any.required": "Client id is required.",
-  }),
-});
 
 export const createClientSchema = Joi.object({
-  // Taken from the token for advisors; only an admin sends it
-  advisorId: Joi.string().hex().length(24).lowercase().messages({
-    "string.empty": "Advisor cannot be empty.",
-    "string.hex": "Advisor id is not valid.",
-    "string.length": "Advisor id is not valid.",
-  }),
-
   clientDetails: Joi.object({
     commercialName: Joi.string().trim().max(100).required().messages({
       "string.base": "Commercial name must be text.",
@@ -73,7 +55,8 @@ export const createClientSchema = Joi.object({
     .default([]),
 });
 
-// POST /v1/client/:clientId/bankAccounts: links one new, active account in a bank to the client
+// Cuenta nueva para un cliente existente (BankAccountForm). Se envía con PATCH /client/:id
+// junto con las cuentas que ya tenía
 export const addBankAccountSchema = Joi.object({
   bankId: Joi.string().hex().length(24).lowercase().required().messages({
     "string.empty": "Bank ID is required.",
@@ -96,12 +79,6 @@ export const addBankAccountSchema = Joi.object({
 });
 
 export const updateClientSchema = Joi.object({
-  advisorId: Joi.string().hex().length(24).lowercase().messages({
-    "string.empty": "Advisor cannot be empty.",
-    "string.hex": "Advisor id is not valid.",
-    "string.length": "Advisor id is not valid.",
-  }),
-
   clientDetails: Joi.object({
     commercialName: Joi.string().trim().max(100).messages({
       "string.base": "Commercial name must be text.",
@@ -130,7 +107,7 @@ export const updateClientSchema = Joi.object({
     "string.length": "Manager id is not valid.",
   }),
 
-  // The full list: stored accounts carry their _id, new ones omit it
+  // La lista completa: las cuentas guardadas van con su _id y las nuevas sin él
   bankAccounts: Joi.array().items(
     Joi.object({
       _id: Joi.string().hex().length(24).lowercase().messages({
@@ -165,12 +142,3 @@ export const updateClientSchema = Joi.object({
   .messages({
     "object.min": "At least one field must be provided for update.",
   });
-
-// GET /v1/client filters; bankId and region match clients with an active account in that bank / region
-export const clientQuerySchema = paginationQuerySchema.keys({
-  q: filterText("Name"),
-  country: filterText("Country"),
-  managerId: filterId("Manager"),
-  bankId: filterId("Bank"),
-  region: filterText("Region"),
-});

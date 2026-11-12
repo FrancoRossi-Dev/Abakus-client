@@ -29,6 +29,17 @@ const DELETE_ERRORS = {
   409: 'El cliente todavía tiene cuentas bancarias activas. Eliminalas antes de borrar al cliente.',
 };
 
+// Pide el uso del plan y lo guarda en Redux. Va aparte de la cartera: si falla, la página se
+// muestra igual y se deja registrar (la API vuelve a controlar el límite)
+const loadPlan = async (dispatch) => {
+  try {
+    const { data } = await backend.get('/user/me/plan');
+    dispatch(setPlan(data));
+  } catch {
+    // sin el plan no se bloquea el alta
+  }
+};
+
 const Clients = () => {
   const dispatch = useDispatch();
 
@@ -53,27 +64,7 @@ const Clients = () => {
   // Cambiarlo vuelve a disparar la carga (botón "Reintentar")
   const [reloadKey, setReloadKey] = useState(0);
 
-  // El uso del plan cambia al registrar o borrar clientes: se vuelve a pedir
-  const refreshPlan = async () => {
-    try {
-      const { data } = await backend.get('/user/me/plan');
-      dispatch(setPlan(data));
-    } catch {
-      // sin el plan se deja registrar igual: la API vuelve a controlar el límite
-    }
-  };
-
   useEffect(() => {
-    // El plan va aparte: si falla, la cartera se muestra igual
-    const fetchPlan = async () => {
-      try {
-        const { data } = await backend.get('/user/me/plan');
-        dispatch(setPlan(data));
-      } catch {
-        // sin el plan se deja registrar igual: la API vuelve a controlar el límite
-      }
-    };
-
     const fetchData = async () => {
       try {
         // el backend devuelve solo los clientes y managers del advisor logueado (sale del token)
@@ -92,7 +83,7 @@ const Clients = () => {
       }
     };
 
-    fetchPlan();
+    loadPlan(dispatch);
     fetchData();
   }, [dispatch, reloadKey]);
 
@@ -113,7 +104,8 @@ const Clients = () => {
   const handleClientCreated = async () => {
     setShowClientForm(false);
     toast.success('Cliente registrado.');
-    refreshPlan();
+    // ocupa un lugar del plan
+    loadPlan(dispatch);
 
     try {
       dispatch(setClients(await getAllPages('/client')));
@@ -142,7 +134,7 @@ const Clients = () => {
       dispatch(clientRemoved(client._id));
       toast.success(`${commercialName} fue eliminado.`);
       // libera un lugar del plan
-      refreshPlan();
+      loadPlan(dispatch);
     } catch (err) {
       toast.error(
         DELETE_ERRORS[err.response?.status] || err.userMessage || 'No se pudo eliminar el cliente.',

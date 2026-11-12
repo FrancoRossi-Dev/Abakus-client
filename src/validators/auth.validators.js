@@ -68,13 +68,13 @@ export const advisorDetailsSchema = Joi.object({
 
 export const loginSchema = Joi.object({ username, password });
 
-// Unknown keys (e.g. role, planTier) are rejected by Joi, so they can't be chosen at signup
+// Joi rechaza las claves que no están en el esquema (ej. role o planTier): no se pueden elegir al registrarse
 export const registerSchema = Joi.object({
   username,
   password: password.pattern(/\S/).messages({
     'string.pattern.base': 'Password cannot be only spaces.',
   }),
-  // Not stripped here: the API requires it too and strips it after validating
+  // Se envía igual: la API también lo exige y lo descarta después de validarlo
   confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
     'any.only': 'Password confirmation does not match the password.',
     'string.empty': 'Please confirm your password.',

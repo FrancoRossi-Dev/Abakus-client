@@ -8,9 +8,9 @@
  *   2. semantic   — roles de interfaz que referencian primitivos. Es la API para componentes.
  *   base          — estilos de elementos HTML nativos; consume solo tokens semánticos.
  *
- * Todos los valores son "referencia propuesta" salvo que se indique lo contrario.
- * Valores marcados [derivado] no figuran en el spec: se infirieron para completar
- * estados y deben validarse. No se define tema oscuro (spec §14).
+ * Los valores marcados [derivado] no figuran en el spec: se completaron para cubrir
+ * estados de la interfaz (hover, foco, tema oscuro).
+ * El tema oscuro redefine los primitivos bajo [data-theme='dark']; la capa semántica no cambia.
  */
 
 @layer primitives, semantic, base;
@@ -110,7 +110,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     Tema oscuro [derivado] — el spec §14 no lo da por aprobado: pendiente de validación.
+     Tema oscuro [derivado]
 
      Se redefinen los mismos primitivos; la capa semántica no cambia. Cada primitivo conserva
      su ROL dentro de la escala, no su luminosidad:
@@ -221,7 +221,7 @@
     --color-logo-primary: var(--abk-blue-900);
     --color-logo-accent: var(--abk-green-400); /* uso gráfico, no texto */
     --color-logo-inverse: var(--abk-neutral-0);
-    --font-family-brand: var(--font-family-base); /* pendiente: la planilla muestra otra sans geométrica */
+    --font-family-brand: var(--font-family-base);
     --logo-size: 2rem; /* altura del símbolo; el resto del logotipo escala con ella */
     --logo-size-min: 16px; /* reducción mínima del símbolo según la planilla */
     --logo-clearspace: calc(var(--logo-size) * 0.5); /* [derivado] zona de respeto «A» aproximada */

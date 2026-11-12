@@ -1,5 +1,5 @@
-// Abakus brand mark — see specs/Abakus Brand Identity Board.png
-// Colors come from semantic tokens (--color-logo-*) defined in App.css.
+// Logo de Abakus (ver specs/Abakus Brand Identity Board.png).
+// Los colores salen de los tokens semánticos --color-logo-* definidos en App.css.
 
 const LAYOUTS = ['horizontal', 'vertical', 'symbol'];
 const TONES = ['default', 'mono', 'inverse'];
